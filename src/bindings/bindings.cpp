@@ -47,6 +47,8 @@ PYBIND11_MODULE(_research_core, m) {
         .def("diff", &Expression::diff, py::arg("var"))
         .def("is_zero", &Expression::is_zero)
         .def("is_one", &Expression::is_one)
+        .def("evaluate", &Expression::evaluate, py::arg("variables"),
+             "Evaluate expression numerically with variable substitutions")
         // Pythonic string representation
         .def("__str__", &Expression::to_string)
         .def("__repr__", [](const Expression& e) {

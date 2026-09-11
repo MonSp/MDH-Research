@@ -41,6 +41,12 @@ Expression::Ptr Symbol::diff(const std::string& var) const {
 
 Expression::Ptr Symbol::clone() const { return std::make_shared<Symbol>(name_); }
 
+double Symbol::evaluate(const std::unordered_map<std::string, double>& vars) const {
+    auto it = vars.find(name_);
+    if (it != vars.end()) return it->second;
+    return 0.0; // undefined variables default to 0
+}
+
 // BinaryOp
 std::string BinaryOp::to_string() const {
     std::string op;
@@ -127,6 +133,17 @@ Expression::Ptr BinaryOp::clone() const {
     return std::make_shared<BinaryOp>(op_, lhs_->clone(), rhs_->clone());
 }
 
+double BinaryOp::evaluate(const std::unordered_map<std::string, double>& vars) const {
+    double l = lhs_->evaluate(vars);
+    double r = rhs_->evaluate(vars);
+    switch (op_) {
+        case NodeType::Add: return l + r;
+        case NodeType::Mul: return l * r;
+        case NodeType::Pow: return std::pow(l, r);
+        default: return 0.0;
+    }
+}
+
 // Neg
 std::string Neg::to_string() const { return "(-" + operand_->to_string() + ")"; }
 
@@ -149,6 +166,10 @@ Expression::Ptr Neg::diff(const std::string& var) const {
 
 Expression::Ptr Neg::clone() const {
     return std::make_shared<Neg>(operand_->clone());
+}
+
+double Neg::evaluate(const std::unordered_map<std::string, double>& vars) const {
+    return -operand_->evaluate(vars);
 }
 
 // Func
@@ -215,6 +236,26 @@ Expression::Ptr Func::clone() const {
         cloned.push_back(a->clone());
     }
     return std::make_shared<Func>(name_, std::move(cloned));
+}
+
+double Func::evaluate(const std::unordered_map<std::string, double>& vars) const {
+    if (args_.empty()) {
+        if (name_ == "pi") return M_PI;
+        return 0.0;
+    }
+    double a = args_[0]->evaluate(vars);
+    if (name_ == "sin") return std::sin(a);
+    if (name_ == "cos") return std::cos(a);
+    if (name_ == "tan") return std::tan(a);
+    if (name_ == "sinh") return std::sinh(a);
+    if (name_ == "cosh") return std::cosh(a);
+    if (name_ == "tanh") return std::tanh(a);
+    if (name_ == "exp") return std::exp(a);
+    if (name_ == "log") return std::log(a);
+    if (name_ == "asin") return std::asin(a);
+    if (name_ == "acos") return std::acos(a);
+    if (name_ == "atan") return std::atan(a);
+    return 0.0;
 }
 
 } // namespace rc::symbol

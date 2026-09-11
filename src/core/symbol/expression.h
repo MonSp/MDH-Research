@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <functional>
+#include <unordered_map>
 
 namespace rc::symbol {
 
@@ -40,6 +41,8 @@ public:
     virtual Ptr clone() const = 0;
     virtual bool is_zero() const { return false; }
     virtual bool is_one() const { return false; }
+    // Numerical evaluation: substitute variable values and compute
+    virtual double evaluate(const std::unordered_map<std::string, double>& vars) const = 0;
 };
 
 class Number : public Expression {
@@ -54,6 +57,7 @@ public:
     Ptr clone() const override;
     bool is_zero() const override { return value_ == 0.0; }
     bool is_one() const override { return value_ == 1.0; }
+    double evaluate(const std::unordered_map<std::string, double>&) const override { return value_; }
 
 private:
     double value_;
@@ -69,6 +73,7 @@ public:
     Ptr simplify() const override;
     Ptr diff(const std::string& var) const override;
     Ptr clone() const override;
+    double evaluate(const std::unordered_map<std::string, double>& vars) const override;
 
 private:
     std::string name_;
@@ -85,6 +90,7 @@ public:
     Ptr simplify() const override;
     Ptr diff(const std::string& var) const override;
     Ptr clone() const override;
+    double evaluate(const std::unordered_map<std::string, double>& vars) const override;
 
 private:
     NodeType op_;
@@ -101,6 +107,7 @@ public:
     Ptr simplify() const override;
     Ptr diff(const std::string& var) const override;
     Ptr clone() const override;
+    double evaluate(const std::unordered_map<std::string, double>& vars) const override;
 
 private:
     Ptr operand_;
@@ -118,6 +125,7 @@ public:
     Ptr simplify() const override;
     Ptr diff(const std::string& var) const override;
     Ptr clone() const override;
+    double evaluate(const std::unordered_map<std::string, double>& vars) const override;
 
 private:
     std::string name_;
