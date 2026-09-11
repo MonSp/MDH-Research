@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/research_coreTargets.cmake")
+
+check_required_components(research_core)
