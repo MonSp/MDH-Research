@@ -22,6 +22,9 @@
 - **黑洞解** — Schwarzschild/Kerr/Reissner-Nordstrom/de Sitter 自动生成
 - **视界/奇点分析** — 数值扫描 g_tt 符号变化 + Kretschmann 发散检测
 - **Hawking 辐射** — 温度、蒸发时间、Bekenstein-Hawking 熵、Unruh 效应
+- **引力透镜** — 光线偏折、爱因斯坦环、微引力透镜光变曲线
+- **宇宙暴胀** — 慢滚参数、原初功率谱、标量谱指数 n_s、张量标量比 r
+- **中子星 TOV** — TOV 方程求解器、质量-半径关系、潮汐形变度
 - **双星演化** — chirp mass、轨道衰减、GW 通量、LIGO 灵敏度
 - **GW 数据分析** — Fisher 矩阵、匹配滤波 SNR、探测距离
 - **对称性分析** — Killing 矢量场检测、stationary/static/axisymmetric 分类
@@ -56,7 +59,7 @@
 | S² 球面 | 常正曲率 | ✓ |
 | H² 双曲面 | 常负曲率 | ✓ |
 
-**测试统计**: 59 C++ + 219 Python = 278 tests
+**测试统计**: 59 C++ + 245 Python = 304 tests
 
 ## 快速开始
 
