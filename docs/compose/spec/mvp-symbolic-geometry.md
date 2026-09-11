@@ -1,9 +1,9 @@
 ---
 feature: mvp-symbolic-geometry
-status: designed
+status: in-progress
 updated: 2026-01-27
-branch: feature/mvp-symbolic-geometry
-commits: (pending)
+branch: main
+commits: bcc64a9
 ---
 
 # MVP: 符号计算引擎与基础微分几何
@@ -189,11 +189,11 @@ auto Scalar = g.scalar_curvature();
 
 ## Tasks
 
-- [ ] T1: 初始化项目结构 — acceptance: `cmake --build` 和 `pytest` 均可执行空测试 (covers: S2)
-- [ ] T2: C++ 符号引擎核心 — acceptance: 能创建符号表达式、求偏导、化简，Catch2 测试全过 (covers: S2.1; depends: T1)
-- [ ] T3: C++ 张量计算模块 — acceptance: 能定义张量、升降指标、缩并，Catch2 测试全过 (covers: S2.2; depends: T2)
-- [ ] T4: C++ 几何核心 — acceptance: 从度量自动计算 Christoffel 符号、Riemann、Ricci、标量曲率，Catch2 测试全过 (covers: S2.3; depends: T3)
+- [x] T1: 初始化项目结构 — acceptance: `cmake --build` 和 `pytest` 均可执行空测试 (covers: S2)
+- [x] T2: C++ 符号引擎核心 — acceptance: 能创建符号表达式、求偏导、化简，Catch2 测试全过 (covers: S2.1; depends: T1)
+- [x] T3: C++ 张量计算模块 — acceptance: 能定义张量、升降指标、缩并，Catch2 测试全过 (covers: S2.2; depends: T2)
+- [x] T4: C++ 几何核心 — acceptance: 从度量自动计算 Christoffel 符号、Riemann、Ricci、标量曲率，Catch2 测试全过 (covers: S2.3; depends: T3)
 - [ ] T5: pybind11 绑定层 — acceptance: Python 能调用 C++ 全链路 API，pytest 测试全过 (covers: S2.4; depends: T4)
-- [ ] T6: Schwarzschild 基准测试 — acceptance: 计算结果与已知解析解完全一致（符号等价），pytest 测试全过 (covers: S2.6; depends: T5)
+- [ ] T6: Schwarzschild 基准测试（C++ 绑定版） — acceptance: 计算结果与已知解析解完全一致（符号等价），pytest 测试全过 (covers: S2.6; depends: T5)
 - [ ] T7: Agent 编排层基础 — acceptance: 能通过 function calling 接口驱动符号计算引擎，mock LLM 测试全过 (covers: S2.5; depends: T5)
-- [ ] T8: AGENTS.md 和项目文档 — acceptance: 新开发者能按文档从零构建和运行测试 (covers: S2; depends: T1)
+- [x] T8: AGENTS.md 和项目文档 — acceptance: 新开发者能按文档从零构建和运行测试 (covers: S2; depends: T1)
