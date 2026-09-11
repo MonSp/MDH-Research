@@ -17,11 +17,14 @@
 - **符号计算引擎** — 表达式树、自动微分、化简、递归下降解析器、数值求值
 - **张量计算** — 指标操作、缩并、张量积
 - **微分几何** — 流形、度量、Christoffel → Riemann → Ricci → Einstein 张量
+- **对称性分析** — Killing 矢量场检测、stationary/static/axisymmetric 分类
+- **线性化引力** — 微扰 Riemann/Ricci、TT 规范引力波解
+- **能量条件** — WEC/SEC/DEC/NEC 符号+数值检验
 - **测地线求解器** — RK4 数值积分、数值 Christoffel 计算
 - **场方程** — Einstein 张量 G_μν、完美流体 T_μν、残差 G_μν - 8πT_μν
 - **SymPy 桥接** — Expression ↔ SymPy 双向转换、Tensor → Matrix
 - **3D 可视化** — 测地线轨迹渲染、坐标演化图
-- **Python 绑定** — pybind11 暴露完整 API (运算符重载、数值求值)
+- **Python 绑定** — pybind11 暴露完整 API (运算符重载、数值求值、clone)
 - **Agent 编排层** — OpenAI function calling 兼容的工具接口
 
 ### 基准测试
@@ -38,7 +41,7 @@
 | S² 球面 | 常正曲率 | ✓ |
 | H² 双曲面 | 常负曲率 | ✓ |
 
-**测试统计**: 59 C++ + 109 Python = 168 tests
+**测试统计**: 59 C++ + 127 Python = 186 tests
 
 ## 快速开始
 
