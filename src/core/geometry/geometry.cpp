@@ -289,4 +289,33 @@ symbol::Expression::Ptr Metric::scalar_curvature() const {
     return R;
 }
 
+tensor::Tensor::Ptr Metric::einstein_tensor() const {
+    auto Ric = ricci_tensor();
+    auto R = scalar_curvature();
+    int n = dimension();
+
+    std::vector<int> dims = {n, n};
+    auto safe_coord = [&](int i) -> const std::string& {
+        return manifold_->coordinates()[i < n ? i : 0];
+    };
+    std::vector<tensor::Index> indices = {
+        {safe_coord(0), tensor::IndexType::Lower},
+        {safe_coord(1), tensor::IndexType::Lower},
+    };
+    auto G = std::make_shared<tensor::Tensor>(2, dims, indices);
+
+    // G_{mu nu} = R_{mu nu} - (1/2) g_{mu nu} R
+    for (int mu = 0; mu < n; ++mu) {
+        for (int nu = 0; nu < n; ++nu) {
+            auto half_g_R = symbol::mul(
+                symbol::number(0.5),
+                symbol::mul(components_[mu][nu]->clone(), R->clone())
+            );
+            G->at({mu, nu}) = symbol::add(Ric->at({mu, nu})->clone(), symbol::neg(half_g_R))->simplify();
+        }
+    }
+
+    return G;
+}
+
 } // namespace rc::geometry

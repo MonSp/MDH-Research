@@ -61,6 +61,9 @@ public:
     // Scalar curvature R
     symbol::Expression::Ptr scalar_curvature() const;
 
+    // Einstein tensor G_{mu nu} = R_{mu nu} - (1/2) g_{mu nu} R
+    tensor::Tensor::Ptr einstein_tensor() const;
+
 private:
     Manifold::Ptr manifold_;
     std::vector<std::vector<symbol::Expression::Ptr>> components_;

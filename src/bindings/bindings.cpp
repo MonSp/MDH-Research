@@ -187,6 +187,8 @@ PYBIND11_MODULE(_research_core, m) {
         .def("riemann_tensor", &Metric::riemann_tensor)
         .def("ricci_tensor", &Metric::ricci_tensor)
         .def("scalar_curvature", &Metric::scalar_curvature)
+        .def("einstein_tensor", &Metric::einstein_tensor,
+             "Einstein tensor G_{mu nu} = R_{mu nu} - (1/2) g_{mu nu} R")
         .def("covariant_tensor", &Metric::covariant_tensor)
         .def("inverse_metric_tensor", &Metric::inverse_metric_tensor)
         // Factory: diagonal metric from expression strings
