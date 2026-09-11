@@ -17,12 +17,16 @@
 - **符号计算引擎** — 表达式树、自动微分、化简、递归下降解析器、数值求值
 - **张量计算** — 指标操作、缩并、张量积
 - **微分几何** — Christoffel → Riemann → Ricci → Einstein → Kretschmann 标量
+- **Tetrads/Vielbein** — 正交标架 e^a_μ、自旋联络 ω^a_{bμ}、标架↔度量转换
+- **Newman-Penrose** — 零标架 (l,n,m,m̄)、Weyl 标量 Ψ₀...Ψ₄、Petrov 分类
 - **黑洞解** — Schwarzschild/Kerr/Reissner-Nordstrom/de Sitter 自动生成
 - **视界/奇点分析** — 数值扫描 g_tt 符号变化 + Kretschmann 发散检测
 - **对称性分析** — Killing 矢量场检测、stationary/static/axisymmetric 分类
 - **ADM 3+1 分解** — lapse/shift/空间度量、哈密顿约束 R^(3)=0
+- **BSSN 数值相对论** — 共形因子/共形度量/共形联络、哈密顿约束
 - **因果结构** — 光锥分析、类时/类光/类空分类、视界因果转换
 - **线性化引力** — 微扰 Riemann/Ricci、TT 规范引力波解
+- **准正规模** — Schwarzschild/Kerr QNM 频率、波形、铃荡信号
 - **能量条件** — WEC/SEC/DEC/NEC 符号+数值检验
 - **测地线求解器** — RK4 数值积分、数值 Christoffel 计算
 - **场方程** — Einstein 张量 G_μν、完美流体 T_μν、残差 G_μν - 8πT_μν
@@ -45,7 +49,7 @@
 | S² 球面 | 常正曲率 | ✓ |
 | H² 双曲面 | 常负曲率 | ✓ |
 
-**测试统计**: 59 C++ + 146 Python = 205 tests
+**测试统计**: 59 C++ + 164 Python = 223 tests
 
 ## 快速开始
 
