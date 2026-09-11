@@ -27,6 +27,14 @@
 | Schwarzschild | Christoffel 符号 + Ricci = 0 | ✓ 与 SymPy 解析解一致 |
 | FLRW (k=0) | Christoffel + Ricci + 标量曲率 R=6(ä/a+H²) | ✓ |
 | Kerr | 结构验证 + 数值 Ricci = 0 + 事件视界 | ✓ |
+| Minkowski | 平坦时空, Γ=0, R=0 | ✓ |
+| de Sitter | 正曲率, R=4Λ | ✓ |
+| Anti-de Sitter | 负曲率 | ✓ |
+| Reissner-Nordström | 带电黑洞, 非零 Ricci | ✓ |
+| S² 球面 | 常正曲率 | ✓ |
+| H² 双曲面 | 常负曲率 | ✓ |
+
+**测试统计**: 59 C++ + 70 Python = 129 tests
 
 ## 快速开始
 
@@ -62,28 +70,31 @@ python3 -c "import _research_core as rc; print(rc.version)"
 import sys; sys.path.insert(0, "build/src/bindings")
 import _research_core as rc
 
-sym = rc.symbol
-geom = rc.geometry
+# 解析器 + 运算符重载
+x = rc.parse("x")
+expr = x**2 + 2*x + 1  # Pythonic 表达式构建
+print(expr)  # ((x^2) + ((2 * x) + 1))
 
-# 使用解析器
-expr = sym.parse("1 - 2*M/r")
-print(expr.to_string())  # (1 - ((2 * M) * r^(-1)))
+# 定义流形
+m = rc.geometry.Manifold("spacetime", ["t", "r", "theta", "phi"])
 
-# 定义流形和度量
-m = geom.Manifold("spacetime", ["t", "r", "theta", "phi"])
-M = sym.symbol("M"); r = sym.symbol("r")
-
-g = geom.Metric(m, [
-    [sym.parse("-(1 - 2*M/r)"), sym.number(0), sym.number(0), sym.number(0)],
-    [sym.number(0), sym.parse("(1 - 2*M/r)^(-1)"), sym.number(0), sym.number(0)],
-    [sym.number(0), sym.number(0), sym.mul(r, r), sym.number(0)],
-    [sym.number(0), sym.number(0), sym.number(0), sym.mul(r, r)],
+# 对角度量一行定义
+g = rc.geometry.Metric.from_diagonal(m, [
+    "-(1 - 2*M/r)",
+    "(1 - 2*M/r)^(-1)",
+    "r^2",
+    "r^2 * sin(theta)^2",
 ])
 
 # 计算曲率
 Gamma = g.christoffel_symbols()
-Ric = g.ricci_tensor()
+print(Gamma[[0, 0, 1]])  # Christoffel 符号分量
 R = g.scalar_curvature()
+print(R)
+
+# 张量 Pythonic 访问
+t = g.covariant_tensor()
+print(t[[0, 0]])  # g_tt
 ```
 
 ## 项目结构
