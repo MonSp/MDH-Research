@@ -186,6 +186,7 @@ Expression::Ptr Parser::parse_primary() {
 
             // Built-in functions
             if (name == "sin" || name == "cos" || name == "tan" ||
+                name == "sinh" || name == "cosh" || name == "tanh" ||
                 name == "sqrt" || name == "exp" || name == "log" ||
                 name == "asin" || name == "acos" || name == "atan") {
                 if (args.size() != 1) {

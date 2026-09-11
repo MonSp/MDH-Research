@@ -180,15 +180,30 @@ Expression::Ptr Func::simplify() const {
 }
 
 Expression::Ptr Func::diff(const std::string& var) const {
-    if (name_ == "sin" && args_.size() == 1) {
-        // d/dx sin(f) = cos(f) * f'
-        auto f = args_[0]->clone();
-        return mul(func("cos", {f->clone()}), args_[0]->diff(var));
+    if (args_.size() != 1) return number(0);
+
+    auto f = args_[0]->clone();
+    auto df = args_[0]->diff(var);
+
+    if (name_ == "sin") {
+        return mul(func("cos", {f}), df);
     }
-    if (name_ == "cos" && args_.size() == 1) {
-        // d/dx cos(f) = -sin(f) * f'
-        auto f = args_[0]->clone();
-        return neg(mul(func("sin", {f->clone()}), args_[0]->diff(var)));
+    if (name_ == "cos") {
+        return neg(mul(func("sin", {f}), df));
+    }
+    if (name_ == "tan") {
+        // d/dx tan(f) = sec^2(f) * f' = (1 + tan^2(f)) * f'
+        return mul(add(number(1), pow(func("tan", {f}), number(2))), df);
+    }
+    if (name_ == "sinh") {
+        return mul(func("cosh", {f}), df);
+    }
+    if (name_ == "cosh") {
+        return mul(func("sinh", {f}), df);
+    }
+    if (name_ == "tanh") {
+        // d/dx tanh(f) = (1 - tanh^2(f)) * f'
+        return mul(add(number(1), neg(pow(func("tanh", {f}), number(2)))), df);
     }
     return number(0); // Default: treat as constant
 }
