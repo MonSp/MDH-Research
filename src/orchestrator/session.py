@@ -191,12 +191,6 @@ class GeometrySession:
         return handler()
 
     def _parse_expr(self, s: str):
-        """Parse a simple expression string into a C++ Expression object."""
+        """Parse an expression string into a C++ Expression object using the full parser."""
         s = s.strip()
-        # Try numeric
-        try:
-            return rc.symbol.number(float(s))
-        except ValueError:
-            pass
-        # Treat as symbol
-        return rc.symbol.symbol(s)
+        return rc.symbol.parse(s)

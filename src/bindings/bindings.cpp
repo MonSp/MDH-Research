@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include "symbol/expression.h"
+#include "symbol/parser.h"
 #include "tensor/tensor.h"
 #include "geometry/geometry.h"
 
@@ -44,6 +45,10 @@ PYBIND11_MODULE(_research_core, m) {
     sym.def("mul", [](Expression::Ptr a, Expression::Ptr b) { return mul(std::move(a), std::move(b)); }, py::arg("a"), py::arg("b"));
     sym.def("pow", [](Expression::Ptr base, Expression::Ptr exp) { return pow(std::move(base), std::move(exp)); }, py::arg("base"), py::arg("exp"));
     sym.def("neg", [](Expression::Ptr a) { return neg(std::move(a)); }, py::arg("a"));
+    sym.def("parse", [](const std::string& expr) {
+        Parser p;
+        return p.parse(expr);
+    }, py::arg("expression"), "Parse a symbolic expression string into an Expression tree");
 
     // Tensor module
     auto tens = m.def_submodule("tensor", "张量计算");

@@ -9,6 +9,9 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(symbol_tests test_symbol.cpp)
 target_link_libraries(symbol_tests PRIVATE Catch2::Catch2WithMain symbol_engine)
 
+add_executable(parser_tests test_parser.cpp)
+target_link_libraries(parser_tests PRIVATE Catch2::Catch2WithMain symbol_engine)
+
 add_executable(tensor_tests test_tensor.cpp)
 target_link_libraries(tensor_tests PRIVATE Catch2::Catch2WithMain tensor_calc)
 
@@ -17,5 +20,6 @@ target_link_libraries(geometry_tests PRIVATE Catch2::Catch2WithMain geometry_cor
 
 include(Catch)
 catch_discover_tests(symbol_tests)
+catch_discover_tests(parser_tests)
 catch_discover_tests(tensor_tests)
 catch_discover_tests(geometry_tests)

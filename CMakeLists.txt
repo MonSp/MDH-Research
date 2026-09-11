@@ -11,6 +11,7 @@ add_library(symbol_engine STATIC
     src/core/symbol/expression.cpp
     src/core/symbol/simplifier.cpp
     src/core/symbol/differentiator.cpp
+    src/core/symbol/parser.cpp
 )
 target_include_directories(symbol_engine PUBLIC src/core/symbol)
 
