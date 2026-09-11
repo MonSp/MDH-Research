@@ -49,6 +49,7 @@ PYBIND11_MODULE(_research_core, m) {
         .def("is_one", &Expression::is_one)
         .def("evaluate", &Expression::evaluate, py::arg("variables"),
              "Evaluate expression numerically with variable substitutions")
+        .def("clone", &Expression::clone, "Create a deep copy of this expression")
         // Pythonic string representation
         .def("__str__", &Expression::to_string)
         .def("__repr__", [](const Expression& e) {
@@ -137,6 +138,7 @@ PYBIND11_MODULE(_research_core, m) {
         .value("Lower", IndexType::Lower);
 
     py::class_<Index>(tens, "Index")
+        .def(py::init<std::string, IndexType>(), py::arg("label"), py::arg("type"))
         .def_readwrite("label", &Index::label)
         .def_readwrite("index_type", &Index::type);
 

@@ -28,9 +28,8 @@ def _make_schwarzschild():
     one_minus = sym.add(sym.number(1), sym.neg(sym.mul(sym.number(2), sym.mul(M, sym.pow(r, sym.number(-1))))))
     g_rr = sym.pow(one_minus, sym.number(-1))
     # g_{θθ} = r^2
-    g_thth = sym.mul(r, sym.clone() if hasattr(r, 'clone') else sym.symbol("r"))
-    # Actually just use r*r
-    r2 = sym.mul(sym.symbol("r"), sym.symbol("r"))
+    g_thth = sym.mul(sym.symbol("r"), sym.symbol("r"))
+    r2 = g_thth
     # g_{φφ} = r^2 sin^2(θ)
     sin_th = sym.func("sin", [sym.symbol("theta")]) if hasattr(sym, 'func') else None
 
