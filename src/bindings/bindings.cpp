@@ -1,12 +1,10 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "research_core.h"
 #include "symbol/expression.h"
 #include "tensor/tensor.h"
 #include "geometry/geometry.h"
 
 namespace py = pybind11;
-using namespace rc;
 using namespace rc::symbol;
 using namespace rc::tensor;
 using namespace rc::geometry;
@@ -39,12 +37,13 @@ PYBIND11_MODULE(_research_core, m) {
     py::class_<Func, Expression, std::shared_ptr<Func>>(sym, "Func")
         .def("name", &Func::name);
 
-    sym.def("number", &number, py::arg("value"));
-    sym.def("symbol", &symbol, py::arg("name"));
-    sym.def("add", &add, py::arg("a"), py::arg("b"));
-    sym.def("mul", &mul, py::arg("a"), py::arg("b"));
-    sym.def("pow", &pow, py::arg("base"), py::arg("exp"));
-    sym.def("neg", &neg, py::arg("a"));
+    // Factory functions — wrap in lambdas to avoid overload/namespace ambiguity
+    sym.def("number", [](double v) { return number(v); }, py::arg("value"));
+    sym.def("symbol", [](const std::string& name) { return symbol(name); }, py::arg("name"));
+    sym.def("add", [](Expression::Ptr a, Expression::Ptr b) { return add(std::move(a), std::move(b)); }, py::arg("a"), py::arg("b"));
+    sym.def("mul", [](Expression::Ptr a, Expression::Ptr b) { return mul(std::move(a), std::move(b)); }, py::arg("a"), py::arg("b"));
+    sym.def("pow", [](Expression::Ptr base, Expression::Ptr exp) { return pow(std::move(base), std::move(exp)); }, py::arg("base"), py::arg("exp"));
+    sym.def("neg", [](Expression::Ptr a) { return neg(std::move(a)); }, py::arg("a"));
 
     // Tensor module
     auto tens = m.def_submodule("tensor", "张量计算");
@@ -55,13 +54,13 @@ PYBIND11_MODULE(_research_core, m) {
 
     py::class_<Index>(tens, "Index")
         .def_readwrite("label", &Index::label)
-        .def_readwrite("type", &Index::type);
+        .def_readwrite("index_type", &Index::type);
 
     py::class_<Tensor, std::shared_ptr<Tensor>>(tens, "Tensor")
         .def("rank", &Tensor::rank)
         .def("dimensions", &Tensor::dimensions)
         .def("indices", &Tensor::indices)
-        .def("at", py::overload_cast<const std::vector<int>&>(&Tensor::at))
+        .def("at", [](Tensor& t, const std::vector<int>& pos) { return t.at(pos); })
         .def("raise_index", &Tensor::raise_index)
         .def("lower_index", &Tensor::lower_index)
         .def("contract", &Tensor::contract)

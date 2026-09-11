@@ -1,6 +1,6 @@
 ---
 feature: mvp-symbolic-geometry
-status: in-progress
+status: delivered
 updated: 2026-01-27
 branch: main
 commits: bcc64a9
@@ -10,7 +10,14 @@ commits: bcc64a9
 
 ## Report
 
-(交付时填写)
+**What was built** — C++17 符号计算引擎（表达式树 + 自动微分 + 化简）+ 张量计算模块（指标操作、缩并、张量积）+ 微分几何核心（流形、度量、Christoffel 符号、Riemann/Ricci 张量、标量曲率）。pybind11 绑定层将 C++ 核心暴露为 Python 模块。Agent 编排层提供 OpenAI function calling 兼容的工具接口，支持有状态的几何计算会话。
+
+**Verification** — 28 Catch2 C++ 测试（符号 14 + 张量 7 + 几何 7），16 pytest Python 测试（绑定 5 + 编排 9 + SymPy 基准 2），全部通过。Schwarzschild 度量的 Christoffel 符号和 Ricci 张量 = 0 与 SymPy 解析解完全一致。
+
+**Journey log**:
+1. 表达式头文件的工厂函数顺序问题导致编译失败 → 前置声明 + 后置定义解决
+2. Christoffel 符号的 tensor index 标签硬编码4D → `safe_coord` lambda 修复任意维度
+3. pybind11 绑定中 `research_core.h` 的前向声明与完整定义冲突 → 移除该头文件，直接包含实际头文件
 
 ## [S1] 问题
 
@@ -193,7 +200,7 @@ auto Scalar = g.scalar_curvature();
 - [x] T2: C++ 符号引擎核心 — acceptance: 能创建符号表达式、求偏导、化简，Catch2 测试全过 (covers: S2.1; depends: T1)
 - [x] T3: C++ 张量计算模块 — acceptance: 能定义张量、升降指标、缩并，Catch2 测试全过 (covers: S2.2; depends: T2)
 - [x] T4: C++ 几何核心 — acceptance: 从度量自动计算 Christoffel 符号、Riemann、Ricci、标量曲率，Catch2 测试全过 (covers: S2.3; depends: T3)
-- [ ] T5: pybind11 绑定层 — acceptance: Python 能调用 C++ 全链路 API，pytest 测试全过 (covers: S2.4; depends: T4)
-- [ ] T6: Schwarzschild 基准测试（C++ 绑定版） — acceptance: 计算结果与已知解析解完全一致（符号等价），pytest 测试全过 (covers: S2.6; depends: T5)
-- [ ] T7: Agent 编排层基础 — acceptance: 能通过 function calling 接口驱动符号计算引擎，mock LLM 测试全过 (covers: S2.5; depends: T5)
+- [x] T5: pybind11 绑定层 — acceptance: Python 能调用 C++ 全链路 API，pytest 测试全过 (covers: S2.4; depends: T4)
+- [x] T6: Schwarzschild 基准测试（C++ 绑定版） — acceptance: 计算结果与已知解析解完全一致（符号等价），pytest 测试全过 (covers: S2.6; depends: T5)
+- [x] T7: Agent 编排层基础 — acceptance: 能通过 function calling 接口驱动符号计算引擎，mock LLM 测试全过 (covers: S2.5; depends: T5)
 - [x] T8: AGENTS.md 和项目文档 — acceptance: 新开发者能按文档从零构建和运行测试 (covers: S2; depends: T1)
