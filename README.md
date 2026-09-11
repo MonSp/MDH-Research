@@ -21,6 +21,9 @@
 - **Newman-Penrose** — 零标架 (l,n,m,m̄)、Weyl 标量 Ψ₀...Ψ₄、Petrov 分类
 - **黑洞解** — Schwarzschild/Kerr/Reissner-Nordstrom/de Sitter 自动生成
 - **视界/奇点分析** — 数值扫描 g_tt 符号变化 + Kretschmann 发散检测
+- **Hawking 辐射** — 温度、蒸发时间、Bekenstein-Hawking 熵、Unruh 效应
+- **双星演化** — chirp mass、轨道衰减、GW 通量、LIGO 灵敏度
+- **GW 数据分析** — Fisher 矩阵、匹配滤波 SNR、探测距离
 - **对称性分析** — Killing 矢量场检测、stationary/static/axisymmetric 分类
 - **ADM 3+1 分解** — lapse/shift/空间度量、哈密顿约束 R^(3)=0
 - **BSSN 数值相对论** — 共形因子/共形度量/共形联络、哈密顿约束
@@ -30,6 +33,7 @@
 - **准正规模** — Schwarzschild/Kerr QNM 频率、波形、铃荡信号
 - **后牛顿近似** — 1PN/2PN 能量、近日点进动、GW 四极矩通量
 - **FLRW 宇宙学** — Friedmann 方程求解、宇宙年龄、宇宙学距离
+- **宇宙学微扰** — 增长因子、物质功率谱、BAO 标度
 - **能量条件** — WEC/SEC/DEC/NEC 符号+数值检验
 - **测地线求解器** — RK4 数值积分、数值 Christoffel 计算
 - **场方程** — Einstein 张量 G_μν、完美流体 T_μν、残差 G_μν - 8πT_μν
@@ -52,7 +56,7 @@
 | S² 球面 | 常正曲率 | ✓ |
 | H² 双曲面 | 常负曲率 | ✓ |
 
-**测试统计**: 59 C++ + 189 Python = 248 tests
+**测试统计**: 59 C++ + 219 Python = 278 tests
 
 ## 快速开始
 
