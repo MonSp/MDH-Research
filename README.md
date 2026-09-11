@@ -14,10 +14,11 @@
 
 ### 已完成
 
-- **符号计算引擎** — 表达式树、自动微分、化简、递归下降解析器
+- **符号计算引擎** — 表达式树、自动微分、化简、递归下降解析器、数值求值
 - **张量计算** — 指标操作、缩并、张量积
 - **微分几何** — 流形、度量、Christoffel 符号 → Riemann → Ricci → 标量曲率
-- **Python 绑定** — pybind11 暴露完整 API
+- **测地线求解器** — RK4 数值积分、数值 Christoffel 计算
+- **Python 绑定** — pybind11 暴露完整 API (运算符重载、数值求值)
 - **Agent 编排层** — OpenAI function calling 兼容的工具接口
 
 ### 基准测试
@@ -34,7 +35,7 @@
 | S² 球面 | 常正曲率 | ✓ |
 | H² 双曲面 | 常负曲率 | ✓ |
 
-**测试统计**: 59 C++ + 70 Python = 129 tests
+**测试统计**: 59 C++ + 88 Python = 147 tests
 
 ## 快速开始
 
@@ -107,7 +108,7 @@ research/
 │   │   ├── tensor/        # 张量计算 (tensor, operations)
 │   │   └── geometry/      # 几何核心 (manifold, metric, curvature)
 │   ├── bindings/          # pybind11 Python 绑定
-│   └── orchestrator/      # Agent 编排层 (function calling)
+│   └── orchestrator/      # Agent 编排层 + 测地线求解器
 ├── tests/
 │   ├── cpp/               # Catch2 C++ 测试
 │   └── python/            # pytest Python 测试
