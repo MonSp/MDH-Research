@@ -318,4 +318,41 @@ tensor::Tensor::Ptr Metric::einstein_tensor() const {
     return G;
 }
 
+symbol::Expression::Ptr Metric::kretschmann_scalar() const {
+    auto R_mixed = riemann_tensor();  // R^mu_{nu rho sigma}
+    int n = dimension();
+
+    // K = R_{mu nu rho sigma} R^{mu nu rho sigma}
+    // Compute R_{mu nu rho sigma} = g_{mu a} R^a_{nu rho sigma} for diagonal metric
+    // Then K = sum_{mu nu rho sigma} (R_{mu nu rho sigma})^2 * g^{mu mu} g^{nu nu} g^{rho rho} g^{sigma sigma}
+    //        = sum (g_{mu mu} R^mu_{nu rho sigma})^2 / (g_{mu mu} g_{nu nu} g_{rho rho} g_{sigma sigma})
+    //        = sum (R^mu_{nu rho sigma})^2 * g_{mu mu} / (g_{nu nu} g_{rho rho} g_{sigma sigma})
+
+    symbol::Expression::Ptr K = symbol::number(0);
+
+    for (int mu = 0; mu < n; ++mu) {
+        for (int nu = 0; nu < n; ++nu) {
+            for (int rho = 0; rho < n; ++rho) {
+                for (int sigma = 0; sigma < n; ++sigma) {
+                    auto R_comp = R_mixed->at({mu, nu, rho, sigma});
+                    if (R_comp->is_zero()) continue;
+
+                    // R_{mu nu rho sigma} = g_{mu mu} * R^mu_{nu rho sigma} (diagonal)
+                    auto R_lower = symbol::mul(components_[mu][mu]->clone(), R_comp->clone());
+
+                    // R^{mu nu rho sigma} = g^{mu mu} g^{nu nu} g^{rho rho} g^{sigma sigma} R_{mu nu rho sigma}
+                    auto R_upper = symbol::mul(
+                        symbol::mul(g_inv(mu, mu), g_inv(nu, nu)),
+                        symbol::mul(g_inv(rho, rho), symbol::mul(g_inv(sigma, sigma), R_lower->clone()))
+                    );
+
+                    K = symbol::add(K, symbol::mul(R_lower, R_upper))->simplify();
+                }
+            }
+        }
+    }
+
+    return K;
+}
+
 } // namespace rc::geometry

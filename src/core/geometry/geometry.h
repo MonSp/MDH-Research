@@ -64,6 +64,9 @@ public:
     // Einstein tensor G_{mu nu} = R_{mu nu} - (1/2) g_{mu nu} R
     tensor::Tensor::Ptr einstein_tensor() const;
 
+    // Kretschmann scalar K = R_{mu nu rho sigma} R^{mu nu rho sigma}
+    symbol::Expression::Ptr kretschmann_scalar() const;
+
 private:
     Manifold::Ptr manifold_;
     std::vector<std::vector<symbol::Expression::Ptr>> components_;

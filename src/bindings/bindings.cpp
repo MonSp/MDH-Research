@@ -191,6 +191,8 @@ PYBIND11_MODULE(_research_core, m) {
         .def("scalar_curvature", &Metric::scalar_curvature)
         .def("einstein_tensor", &Metric::einstein_tensor,
              "Einstein tensor G_{mu nu} = R_{mu nu} - (1/2) g_{mu nu} R")
+        .def("kretschmann_scalar", &Metric::kretschmann_scalar,
+             "Kretschmann scalar K = R_{mu nu rho sigma} R^{mu nu rho sigma}")
         .def("covariant_tensor", &Metric::covariant_tensor)
         .def("inverse_metric_tensor", &Metric::inverse_metric_tensor)
         // Factory: diagonal metric from expression strings
