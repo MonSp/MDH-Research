@@ -15,6 +15,7 @@ from __future__ import annotations
 import sys
 import os
 import time
+import json
 from typing import Any
 
 BUILD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "build", "src", "bindings")
@@ -35,7 +36,6 @@ def _get_tools():
     """Lazy-load tool functions from orchestrator modules."""
     tools = {}
 
-    # Geometry tools
     def compute_christoffel(metric_str, coords, params=None):
         m = rc.geometry.Manifold("m", coords)
         g = rc.geometry.Metric.from_diagonal(m, metric_str if isinstance(metric_str, list) else [metric_str])
@@ -104,9 +104,11 @@ class ResearchLoop:
     into executable experiments, then records everything in the journal.
     """
 
-    def __init__(self, journal: ResearchJournal | None = None):
+    def __init__(self, journal: ResearchJournal | None = None,
+                 llm_client: Any = None):
         self.journal = journal or ResearchJournal()
         self.tools = _get_tools()
+        self.llm = llm_client  # optional: dict with "client" and "model" keys
 
     def run(self, question: str) -> dict[str, Any]:
         """Run a complete research cycle on a question.
@@ -117,12 +119,10 @@ class ResearchLoop:
         Returns:
             Dict with hypothesis, experiments, results, and conclusion.
         """
-        # 1. Decompose question into hypotheses
         hypotheses = self._hypothesize(question)
 
         results = []
         for hyp in hypotheses:
-            # 2. Design experiment for each hypothesis
             experiment = self._design_experiment(hyp)
             hyp_id = self.journal.log_hypothesis(
                 question=question,
@@ -130,7 +130,6 @@ class ResearchLoop:
                 assumptions=hyp.get("assumptions", []),
             )
 
-            # 3. Execute experiment
             exp_id = self.journal.log_experiment(
                 tool=experiment["tool"],
                 params=experiment["params"],
@@ -149,7 +148,6 @@ class ResearchLoop:
                 self.journal.log_error(experiment["tool"], str(e))
                 results.append({"hypothesis": hyp, "error": str(e), "success": False})
 
-        # 4. Analyze and conclude
         conclusion = self._analyze(question, results)
         self.journal.log_conclusion(
             hypothesis_id=hyp_id,
@@ -165,12 +163,114 @@ class ResearchLoop:
             "journal_summary": self.journal.summary(),
         }
 
+    # ── Hypothesis decomposition ──
+
     def _hypothesize(self, question: str) -> list[dict]:
         """Decompose a question into testable hypotheses.
 
-        Uses pattern matching for common research questions.
-        Falls back to LLM when available.
+        Tries LLM first, falls back to pattern matching.
         """
+        if self.llm:
+            try:
+                return self._hypothesize_llm(question)
+            except Exception:
+                pass
+        return self._hypothesize_patterns(question)
+
+    def _hypothesize_llm(self, question: str) -> list[dict]:
+        """Use LLM to decompose a question into testable hypotheses.
+
+        Expects LLM to return JSON matching the tool schema.
+        """
+        tools_desc = json.dumps({
+            "tools": list(self.tools.keys()),
+            "tool_schemas": {
+                "compute_scalar_curvature": {"params": {"metric_str": "list[str]", "coords": "list[str]"}},
+                "compute_kretschmann": {"params": {"metric_str": "list[str]", "coords": "list[str]"}},
+                "compute_christoffel": {"params": {"metric_str": "list[str]", "coords": "list[str]"}},
+                "create_blackhole": {"params": {"bh_type": "str", "params": "dict"}},
+                "solve_geodesic": {"params": {"metric_str": "list[str]", "coords": "list[str]", "x0": "list[float]", "u0": "list[float]", "tau_max": "float"}},
+                "hawking_temperature": {"params": {"mass_kg": "float"}},
+                "solve_friedmann": {"params": {"params": "dict"}},
+                "cmb_power_spectrum": {"params": {"params": "dict"}},
+            },
+            "known_metrics": {
+                "schwarzschild": ["-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"],
+                "minkowski": ["-1", "1", "1", "1"],
+                "kerr_diagonal": ["-(1 - 2*M*r/(r^2 + a^2*cos(theta)^2))", "(r^2 + a^2*cos(theta)^2)/(r^2 - 2*M*r + a^2)", "r^2 + a^2*cos(theta)^2", "r^2 * sin(theta)^2"],
+                "de_sitter": ["-(1 - L*r^2/3)", "(1 - L*r^2/3)^(-1)", "r^2", "r^2 * sin(theta)^2"],
+            },
+        }, indent=2)
+
+        system_prompt = f"""You are a physics research assistant. Given a research question, 
+decompose it into testable hypotheses, each with a tool call.
+
+Available tools and schemas:
+{tools_desc}
+
+Return ONLY a JSON array of hypotheses. Each must have:
+- "prediction": string stating what the experiment should show
+- "tool": tool name from the available tools
+- "params": dict matching the tool's parameter schema
+- "assumptions": list of strings
+
+Example for "What is the Kretschmann scalar of Schwarzschild?":
+[
+  {{
+    "prediction": "Kretschmann scalar K = 48M²/r⁶",
+    "tool": "compute_kretschmann",
+    "params": {{"metric_str": ["-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"], "coords": ["t", "r", "theta", "phi"]}},
+    "assumptions": ["Schwarzschild metric", "M > 0", "r > 2M"]
+  }}
+]"""
+
+        # Call LLM via OpenAI-compatible API
+        import httpx
+
+        api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("LLM_API_KEY", "")
+        base_url = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1")
+        model = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+
+        response = httpx.post(
+            f"{base_url}/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}"},
+            json={
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": question},
+                ],
+                "temperature": 0.1,
+                "response_format": {"type": "json_object"},
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        content = response.json()["choices"][0]["message"]["content"]
+
+        # Parse JSON (handle both array and object wrappers)
+        content = content.strip()
+        if content.startswith("```"):
+            content = content.split("```")[1]
+            if content.startswith("json"):
+                content = content[4:]
+        hypotheses = json.loads(content)
+        if isinstance(hypotheses, dict):
+            hypotheses = hypotheses.get("hypotheses", [hypotheses])
+
+        # Validate
+        validated = []
+        for h in hypotheses:
+            if h.get("tool") in self.tools and "params" in h:
+                validated.append(h)
+
+        if not validated:
+            raise ValueError("LLM returned no valid hypotheses")
+
+        return validated
+
+    def _hypothesize_patterns(self, question: str) -> list[dict]:
+        """Pattern-matching hypothesis decomposition (fallback)."""
         q = question.lower()
         hypotheses = []
 
@@ -239,7 +339,6 @@ class ResearchLoop:
             })
 
         else:
-            # Generic: try to extract metric from question
             hypotheses.append({
                 "prediction": "Computing the requested quantity",
                 "tool": "compute_scalar_curvature",
@@ -253,14 +352,12 @@ class ResearchLoop:
         return hypotheses
 
     def _design_experiment(self, hypothesis: dict) -> dict:
-        """Design an experiment to test a hypothesis."""
         return {
             "tool": hypothesis["tool"],
             "params": hypothesis["params"],
         }
 
     def _execute(self, experiment: dict) -> Any:
-        """Execute an experiment using the tool registry."""
         tool_name = experiment["tool"]
         params = experiment["params"]
 
@@ -290,9 +387,7 @@ class ResearchLoop:
             result = r["result"]
             pred = r["hypothesis"]["prediction"]
 
-            # Try numerical verification for symbolic results
             if hasattr(result, "evaluate"):
-                # Try evaluating at common test points
                 test_points = [
                     {"M": 1, "r": 6, "theta": 1.5708, "phi": 0, "t": 0},
                     {"M": 1, "r": 10, "theta": 1.5708, "phi": 0, "t": 0},
