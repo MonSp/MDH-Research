@@ -1,6 +1,6 @@
 # 大荒界-科研 (MDH-Research)
 
-[![Tests](https://img.shields.io/badge/tests-304%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-328%20passed-brightgreen)]()
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)]()
 [![Python](https://img.shields.io/badge/Python-3.11+-yellow)]()
 
