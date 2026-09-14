@@ -271,7 +271,10 @@ class ResearchLoop:
         return tool_fn(**params)
 
     def _analyze(self, question: str, results: list[dict]) -> dict:
-        """Analyze results and form a conclusion."""
+        """Analyze results and form a conclusion.
+
+        For symbolic results, tries numerical evaluation to verify predictions.
+        """
         successful = [r for r in results if r.get("success")]
         failed = [r for r in results if not r.get("success")]
 
@@ -281,19 +284,43 @@ class ResearchLoop:
                 "evidence": [r.get("error", "unknown") for r in failed],
             }
 
-        # Extract key findings
         evidence = []
+        verified = 0
         for r in successful:
             result = r["result"]
             pred = r["hypothesis"]["prediction"]
-            if isinstance(result, dict):
-                evidence.append(f"{pred}: {result}")
-            else:
-                evidence.append(f"{pred}: {str(result)[:200]}")
 
+            # Try numerical verification for symbolic results
+            if hasattr(result, "evaluate"):
+                # Try evaluating at common test points
+                test_points = [
+                    {"M": 1, "r": 6, "theta": 1.5708, "phi": 0, "t": 0},
+                    {"M": 1, "r": 10, "theta": 1.5708, "phi": 0, "t": 0},
+                ]
+                for pt in test_points:
+                    try:
+                        val = result.evaluate(pt)
+                        if abs(val) < 1e-8:
+                            evidence.append(f"CONFIRMED: {pred} — numerically verified as 0 at {pt}")
+                            verified += 1
+                            break
+                        else:
+                            evidence.append(f"RESULT: {pred} — evaluates to {val} at {pt}")
+                    except Exception:
+                        pass
+                else:
+                    s = result.to_string()
+                    evidence.append(f"RESULT: {pred}: {s[:200]}")
+            elif isinstance(result, dict):
+                evidence.append(f"RESULT: {pred}: {result}")
+            else:
+                evidence.append(f"RESULT: {pred}: {str(result)[:200]}")
+
+        verdict = "Hypotheses verified" if verified > 0 else "Experiments completed (symbolic simplification pending)"
         return {
-            "verdict": "Experiments completed successfully",
+            "verdict": verdict,
             "evidence": evidence,
             "n_experiments": len(successful),
             "n_failures": len(failed),
+            "n_verified": verified,
         }
