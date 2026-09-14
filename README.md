@@ -1,6 +1,6 @@
 # 大荒界-科研 (MDH-Research)
 
-[![Tests](https://img.shields.io/badge/tests-328%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-347%20passed-brightgreen)]()
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)]()
 [![Python](https://img.shields.io/badge/Python-3.11+-yellow)]()
 
@@ -162,15 +162,51 @@ research/
 │       ├── energy_conditions.py # 能量条件
 │       ├── field_equations.py # 场方程
 │       ├── sympy_bridge.py    # SymPy 双向转换
-│       ├── visualization.py   # 3D 可视化
-│       └── session.py         # Agent 编排层
+│       ├── journal.py         # 研究日志 (append-only)
+│       ├── research_loop.py   # 研究闭环 (假设→实验→分析→结论)
+│       ├── kernel_bridge.py   # agent-kernel IPC 桥接
+│       ├── session.py         # Agent 编排层
+│       └── visualization.py   # 3D 可视化
+├── config/
+│   └── research-skill-mapping.json  # 20 个 skill → 修仙能力映射
+├── skills/
+│   ├── research-compute/SKILL.md    # 计算核心 skill
+│   ├── research-analyze/SKILL.md    # 分析分类 skill
+│   ├── research-experiment/SKILL.md # 实验执行 skill
+│   └── research-report/SKILL.md     # 报告生成 skill
 ├── tests/
 │   ├── cpp/               # 59 Catch2 C++ 测试
-│   └── python/            # 245+ pytest Python 测试
+│   └── python/            # 288+ pytest Python 测试
 ├── CMakeLists.txt
 ├── CMakePresets.json
 └── pyproject.toml
 ```
+
+## Agent-Kernel 集成
+
+四层架构连接研究智能体与 agent-kernel ECS：
+
+```
+┌─────────────────────────────────────┐
+│  ResearchLoop (研究闭环)              │
+│  假设 → 实验 → 分析 → 结论           │
+├─────────────────────────────────────┤
+│  ResearchJournal (研究日志)           │
+│  append-only, harness 可观测         │
+├─────────────────────────────────────┤
+│  Skill Manifests (技能定义)           │
+│  20 个 skill → 修仙能力映射           │
+├─────────────────────────────────────┤
+│  AgentKernelBridge (IPC 桥接)        │
+│  Unix socket, JSON-RPC              │
+└─────────────────────────────────────┘
+         ↕ agent-kernel (ECS)
+```
+
+- **4 个 skill 类别**: compute / analyze / experiment / report
+- **20 个研究 skill** 映射到修仙能力 (炼算/参悟/推演/观象)
+- **研究日志**: 每次假设/实验/结论都记录为结构化 event
+- **研究闭环**: `ResearchLoop.run("question")` 自动分解→执行→记录
 
 ## 与大荒界生态的关系
 
