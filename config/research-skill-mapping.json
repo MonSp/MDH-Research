@@ -1,0 +1,144 @@
+{
+  "_comment": "MDH-Research skill → agent-kernel ability mapping. Research skills follow 修仙 convention (推演/观象/炼算/参悟).",
+
+  "symbolic_compute": {
+    "gameAbility": "炼算",
+    "category": "Research",
+    "description": "符号计算 = 炼算，表达式树构建/微分/化简/求值",
+    "tools": ["parse_expression", "evaluate", "simplify", "differentiate"],
+    "module": "src/core/symbol"
+  },
+  "tensor_algebra": {
+    "gameAbility": "炼算",
+    "category": "Research",
+    "description": "张量代数 = 炼算，升降指标/缩并/张量积",
+    "tools": ["tensor_raise_index", "tensor_lower_index", "tensor_contract", "tensor_product"],
+    "module": "src/core/tensor"
+  },
+  "differential_geometry": {
+    "gameAbility": "参悟",
+    "category": "Research",
+    "description": "微分几何 = 参悟，流形/度量/联络/曲率的符号计算",
+    "tools": ["compute_christoffel", "compute_riemann", "compute_ricci", "compute_einstein", "compute_kretschmann"],
+    "module": "src/core/geometry"
+  },
+  "geodesic_solver": {
+    "gameAbility": "推演",
+    "category": "Research",
+    "description": "测地线求解 = 推演，RK4 数值积分测地线方程",
+    "tools": ["solve_geodesic", "christoffel_numerical", "geodesic_equation"],
+    "module": "src/orchestrator/geodesic.py"
+  },
+  "blackhole_solutions": {
+    "gameAbility": "观象",
+    "category": "Research",
+    "description": "黑洞解 = 观象，Schwarzschild/Kerr/RN/dS 自动生成与分析",
+    "tools": ["create_schwarzschild", "create_kerr", "create_reissner_nordstrom", "analyze_horizon", "compute_kretschmann"],
+    "module": "src/orchestrator/blackholes.py"
+  },
+  "hawking_radiation": {
+    "gameAbility": "参悟",
+    "category": "Research",
+    "description": "Hawking 辐射 = 参悟，温度/蒸发/熵/Unruh 效应",
+    "tools": ["hawking_temperature", "evaporation_time", "bekenstein_hawking_entropy", "unruh_temperature"],
+    "module": "src/orchestrator/hawking.py"
+  },
+  "gravitational_lensing": {
+    "gameAbility": "观象",
+    "category": "Research",
+    "description": "引力透镜 = 观象，光线偏折/爱因斯坦环/微引力透镜",
+    "tools": ["deflection_angle", "einstein_radius", "microlensing_light_curve", "image_positions"],
+    "module": "src/orchestrator/lensing.py"
+  },
+  "wave_analysis": {
+    "gameAbility": "推演",
+    "category": "Research",
+    "description": "引力波分析 = 推演，Fisher 矩阵/SNR/匹配滤波",
+    "tools": ["fisher_matrix", "matched_filter_snr", "compute_horizon_distance", "inspiral_waveform_fd"],
+    "module": "src/orchestrator/gw_analysis.py"
+  },
+  "binary_evolution": {
+    "gameAbility": "推演",
+    "category": "Research",
+    "description": "双星演化 = 推演，chirp mass/轨道衰减/GW 通量",
+    "tools": ["chirp_mass", "orbital_decay_rate", "merger_time", "evolve_binary"],
+    "module": "src/orchestrator/binary.py"
+  },
+  "quasinormal_modes": {
+    "gameAbility": "参悟",
+    "category": "Research",
+    "description": "准正规模 = 参悟，Schwarzschild/Kerr QNM 频率与波形",
+    "tools": ["schwarzschild_qnm", "kerr_qnm", "qnm_spectrum", "ringdown_waveform"],
+    "module": "src/orchestrator/quasinormal.py"
+  },
+  "numerical_relativity": {
+    "gameAbility": "推演",
+    "category": "Research",
+    "description": "数值相对论 = 推演，BSSN 演进/黑洞合并波形",
+    "tools": ["binary_merger_waveform", "bssn_evolution_step", "simulate_merger_ringdown"],
+    "module": "src/orchestrator/numerical_relativity.py"
+  },
+  "cosmology": {
+    "gameAbility": "观象",
+    "category": "Research",
+    "description": "宇宙学 = 观象，Friedmann 方程/宇宙年龄/距离",
+    "tools": ["solve_friedmann", "age_of_universe", "cosmological_distances", "hubble_parameter"],
+    "module": "src/orchestrator/cosmology.py"
+  },
+  "inflation": {
+    "gameAbility": "参悟",
+    "category": "Research",
+    "description": "宇宙暴胀 = 参悟，慢滚参数/原初功率谱/n_s/r",
+    "tools": ["slow_roll_parameters", "number_of_efolds", "primordial_scalar_power_spectrum", "inflationary_observables"],
+    "module": "src/orchestrator/inflation.py"
+  },
+  "cmb_anisotropy": {
+    "gameAbility": "观象",
+    "category": "Research",
+    "description": "CMB 各向异性 = 观象，角功率谱/声峰/Silk 阻尼",
+    "tools": ["cmb_power_spectrum", "acoustic_scale", "peak_positions", "cmb_observables"],
+    "module": "src/orchestrator/cmb.py"
+  },
+  "dark_energy": {
+    "gameAbility": "参悟",
+    "category": "Research",
+    "description": "暗能量 = 参悟，状态方程/f(R) 修正引力/CPL 参数化",
+    "tools": ["w_cpl", "dark_energy_density", "f_R_model", "deceleration_parameter"],
+    "module": "src/orchestrator/dark_energy.py"
+  },
+  "perturbation_theory": {
+    "gameAbility": "推演",
+    "category": "Research",
+    "description": "微扰理论 = 推演，RW/Zerilli 方程/线性化引力/宇宙学微扰",
+    "tools": ["solve_regge_wheeler", "solve_zerilli", "compute_gw_strain", "growth_factor", "matter_power_spectrum"],
+    "module": "src/orchestrator/perturbation_eqns.py"
+  },
+  "killing_symmetry": {
+    "gameAbility": "参悟",
+    "category": "Research",
+    "description": "对称性分析 = 参悟，Killing 矢量场检测/分类",
+    "tools": ["is_killing_vector", "detect_coordinate_killing_vectors", "classify_symmetry"],
+    "module": "src/orchestrator/killing.py"
+  },
+  "energy_conditions": {
+    "gameAbility": "参悟",
+    "category": "Research",
+    "description": "能量条件 = 参悟，WEC/SEC/DEC/NEC 符号+数值检验",
+    "tools": ["check_energy_conditions_symbolic", "check_energy_conditions_numerical"],
+    "module": "src/orchestrator/energy_conditions.py"
+  },
+  "neutron_star": {
+    "gameAbility": "观象",
+    "category": "Research",
+    "description": "中子星 = 观象，TOV 方程/质量-半径/潮汐形变",
+    "tools": ["solve_tov", "mass_radius_relation", "tidal_deformability"],
+    "module": "src/orchestrator/neutron_star.py"
+  },
+  "sympy_bridge": {
+    "gameAbility": "炼算",
+    "category": "Research",
+    "description": "SymPy 桥接 = 炼算，C++ Expression ↔ SymPy 双向转换",
+    "tools": ["expr_to_sympy", "sympy_to_expr", "tensor_to_sympy"],
+    "module": "src/orchestrator/sympy_bridge.py"
+  }
+}
