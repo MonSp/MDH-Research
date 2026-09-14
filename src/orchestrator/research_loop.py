@@ -108,7 +108,10 @@ class ResearchLoop:
                  llm_client: Any = None):
         self.journal = journal or ResearchJournal()
         self.tools = _get_tools()
-        self.llm = llm_client  # optional: dict with "client" and "model" keys
+        # Auto-detect LLM from environment
+        if llm_client is None and os.environ.get("LLM_API_KEY"):
+            llm_client = True  # signal to use env-configured LLM
+        self.llm = llm_client
 
     def run(self, question: str) -> dict[str, Any]:
         """Run a complete research cycle on a question.
