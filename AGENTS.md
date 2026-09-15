@@ -91,6 +91,7 @@ research/
 - 新增物理能力：orchestrator 模块实现函数 → mapping 增加 tool 名 → registry 注册 `ToolSpec`（必要时写 wrapper）
 - Metric 交接：工厂 put 进 `MetricStore`，消费者用 `metric_name`；禁止把活体 C++ Metric 塞进 JSON 返回值
 - ResearchLoop / GeometrySession / LLM schema 均从 registry 取工具，不要在 research_loop 里再写死 tool 表
+- **顺序链**：hypothesis 支持 `tools: [t1, t2, ...]`；`_execute_chain` 串行执行，`create_*` 的 `metric_name` 自动注入后续 `needs_metric` 步骤；缺 metric 时显式失败
 
 ## 与大荒界生态的关系
 

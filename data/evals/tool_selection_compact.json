@@ -1,0 +1,1365 @@
+{
+  "model": "deepseek-v4-flash",
+  "base_url": "https://api.deepseek.com",
+  "mode": "compact",
+  "n_cases": 74,
+  "n_tools": 80,
+  "overall_top1": 0.8513513513513513,
+  "overall_any3": 0.9864864864864865,
+  "parse_rate": 0.9864864864864865,
+  "single_top1": 0.8405797101449275,
+  "single_any3": 0.9855072463768116,
+  "multi_top1_first_step": 1.0,
+  "multi_any3": 1.0,
+  "mean_latency_ms": 1265.6559138684659,
+  "failures": [
+    {
+      "id": "g01",
+      "kind": "single",
+      "question": "What is the scalar curvature of Schwarzschild spacetime?",
+      "expected": [
+        "compute_scalar_curvature"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "compute_scalar_curvature"
+      ],
+      "error": null
+    },
+    {
+      "id": "g02",
+      "kind": "single",
+      "question": "Compute the Kretschmann scalar for a Schwarzschild black hole.",
+      "expected": [
+        "compute_kretschmann"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "compute_kretschmann"
+      ],
+      "error": null
+    },
+    {
+      "id": "g05",
+      "kind": "single",
+      "question": "Where is the event horizon of a Schwarzschild black hole with M=1?",
+      "expected": [
+        "analyze_horizon",
+        "create_schwarzschild"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "analyze_horizon"
+      ],
+      "error": null
+    },
+    {
+      "id": "g06",
+      "kind": "single",
+      "question": "Compute Christoffel symbols for the Schwarzschild metric.",
+      "expected": [
+        "compute_christoffel"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "compute_christoffel"
+      ],
+      "error": null
+    },
+    {
+      "id": "g07",
+      "kind": "single",
+      "question": "Compute the Einstein tensor G_mn for a vacuum metric.",
+      "expected": [
+        "compute_einstein"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "compute_einstein"
+      ],
+      "error": null
+    },
+    {
+      "id": "s01",
+      "kind": "single",
+      "question": "Is this spacetime stationary? Classify its Killing symmetries.",
+      "expected": [
+        "classify_symmetry",
+        "detect_coordinate_killing_vectors"
+      ],
+      "predicted": [
+        "detect_coordinate_killing_vectors",
+        "classify_symmetry"
+      ],
+      "error": null
+    },
+    {
+      "id": "s03",
+      "kind": "single",
+      "question": "Classify a vector as timelike, null, or spacelike in Schwarzschild.",
+      "expected": [
+        "classify_vector"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "classify_vector"
+      ],
+      "error": null
+    },
+    {
+      "id": "s05",
+      "kind": "single",
+      "question": "What Petrov type is the Schwarzschild spacetime?",
+      "expected": [
+        "classify_petrov_type"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "classify_petrov_type"
+      ],
+      "error": null
+    },
+    {
+      "id": "d01",
+      "kind": "single",
+      "question": "Integrate a timelike geodesic in Schwarzschild starting at r=10M.",
+      "expected": [
+        "solve_geodesic"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "solve_geodesic"
+      ],
+      "error": null
+    },
+    {
+      "id": "d02",
+      "kind": "single",
+      "question": "Evaluate Christoffel symbols at the point (0, 6, pi/2, 0).",
+      "expected": [
+        "christoffel_at_point"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "christoffel_at_point"
+      ],
+      "error": null
+    },
+    {
+      "id": "p08",
+      "kind": "single",
+      "question": "Evaluate the Hamiltonian constraint for a static metric.",
+      "expected": [
+        "hamiltonian_constraint_static"
+      ],
+      "predicted": [],
+      "error": "no json: "
+    }
+  ],
+  "results": [
+    {
+      "id": "g01",
+      "question": "What is the scalar curvature of Schwarzschild spacetime?",
+      "kind": "single",
+      "expected": [
+        "compute_scalar_curvature"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "compute_scalar_curvature"
+      ],
+      "top1_correct": false,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1433.1934452056885
+    },
+    {
+      "id": "g02",
+      "question": "Compute the Kretschmann scalar for a Schwarzschild black hole.",
+      "kind": "single",
+      "expected": [
+        "compute_kretschmann"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "compute_kretschmann"
+      ],
+      "top1_correct": false,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1125.131368637085
+    },
+    {
+      "id": "g03",
+      "question": "Create a Kerr black hole metric with spin a=0.7.",
+      "kind": "single",
+      "expected": [
+        "create_kerr"
+      ],
+      "predicted": [
+        "create_kerr"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1158.3011150360107
+    },
+    {
+      "id": "g04",
+      "question": "Create a Reissner-Nordstrom charged black hole.",
+      "kind": "single",
+      "expected": [
+        "create_reissner_nordstrom"
+      ],
+      "predicted": [
+        "create_reissner_nordstrom"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1165.3149127960205
+    },
+    {
+      "id": "g05",
+      "question": "Where is the event horizon of a Schwarzschild black hole with M=1?",
+      "kind": "single",
+      "expected": [
+        "analyze_horizon",
+        "create_schwarzschild"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "analyze_horizon"
+      ],
+      "top1_correct": false,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 2124.8276233673096
+    },
+    {
+      "id": "g06",
+      "question": "Compute Christoffel symbols for the Schwarzschild metric.",
+      "kind": "single",
+      "expected": [
+        "compute_christoffel"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "compute_christoffel"
+      ],
+      "top1_correct": false,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1154.1671752929688
+    },
+    {
+      "id": "g07",
+      "question": "Compute the Einstein tensor G_mn for a vacuum metric.",
+      "kind": "single",
+      "expected": [
+        "compute_einstein"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "compute_einstein"
+      ],
+      "top1_correct": false,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1231.496810913086
+    },
+    {
+      "id": "s01",
+      "question": "Is this spacetime stationary? Classify its Killing symmetries.",
+      "kind": "single",
+      "expected": [
+        "classify_symmetry",
+        "detect_coordinate_killing_vectors"
+      ],
+      "predicted": [
+        "detect_coordinate_killing_vectors",
+        "classify_symmetry"
+      ],
+      "top1_correct": false,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": -1207.2274684906006
+    },
+    {
+      "id": "s02",
+      "question": "Check whether the dominant and null energy conditions hold for rho=1/r^2, p=0.",
+      "kind": "single",
+      "expected": [
+        "check_energy_conditions_for_metric"
+      ],
+      "predicted": [
+        "check_energy_conditions_for_metric"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 3342.4973487854004
+    },
+    {
+      "id": "s03",
+      "question": "Classify a vector as timelike, null, or spacelike in Schwarzschild.",
+      "kind": "single",
+      "expected": [
+        "classify_vector"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "classify_vector"
+      ],
+      "top1_correct": false,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1471.0063934326172
+    },
+    {
+      "id": "s04",
+      "question": "Find where curvature singularities occur in this metric.",
+      "kind": "single",
+      "expected": [
+        "singularity_analysis"
+      ],
+      "predicted": [
+        "singularity_analysis"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1053.2617568969727
+    },
+    {
+      "id": "s05",
+      "question": "What Petrov type is the Schwarzschild spacetime?",
+      "kind": "single",
+      "expected": [
+        "classify_petrov_type"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "classify_petrov_type"
+      ],
+      "top1_correct": false,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 894.472599029541
+    },
+    {
+      "id": "s06",
+      "question": "Build an orthonormal tetrad for a diagonal metric.",
+      "kind": "single",
+      "expected": [
+        "build_tetrad_diagonal"
+      ],
+      "predicted": [
+        "build_tetrad_diagonal"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1352.7147769927979
+    },
+    {
+      "id": "s07",
+      "question": "Evaluate the field-equation residual G_mn - 8 pi T_mn at a point.",
+      "kind": "single",
+      "expected": [
+        "field_equation_residual_numerical"
+      ],
+      "predicted": [
+        "field_equation_residual_numerical"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1589.1833305358887
+    },
+    {
+      "id": "d01",
+      "question": "Integrate a timelike geodesic in Schwarzschild starting at r=10M.",
+      "kind": "single",
+      "expected": [
+        "solve_geodesic"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "solve_geodesic"
+      ],
+      "top1_correct": false,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1161.4627838134766
+    },
+    {
+      "id": "d02",
+      "question": "Evaluate Christoffel symbols at the point (0, 6, pi/2, 0).",
+      "kind": "single",
+      "expected": [
+        "christoffel_at_point"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "christoffel_at_point"
+      ],
+      "top1_correct": false,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 2399.813175201416
+    },
+    {
+      "id": "h01",
+      "question": "What is the Hawking temperature of a one-solar-mass black hole?",
+      "kind": "single",
+      "expected": [
+        "hawking_temperature"
+      ],
+      "predicted": [
+        "hawking_temperature"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1888.8044357299805
+    },
+    {
+      "id": "h02",
+      "question": "How long does a solar-mass black hole take to evaporate?",
+      "kind": "single",
+      "expected": [
+        "evaporation_time"
+      ],
+      "predicted": [
+        "evaporation_time"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1283.921718597412
+    },
+    {
+      "id": "h03",
+      "question": "Compute the Bekenstein-Hawking entropy of a black hole.",
+      "kind": "single",
+      "expected": [
+        "bekenstein_hawking_entropy"
+      ],
+      "predicted": [
+        "bekenstein_hawking_entropy"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1867.2294616699219
+    },
+    {
+      "id": "h04",
+      "question": "What is the Unruh temperature for acceleration 1e10 m/s^2?",
+      "kind": "single",
+      "expected": [
+        "unruh_temperature"
+      ],
+      "predicted": [
+        "unruh_temperature"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 729.2046546936035
+    },
+    {
+      "id": "l01",
+      "question": "What is the light deflection angle for mass M and impact parameter b?",
+      "kind": "single",
+      "expected": [
+        "deflection_angle"
+      ],
+      "predicted": [
+        "deflection_angle"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 588.7818336486816
+    },
+    {
+      "id": "l02",
+      "question": "Compute the Einstein ring radius given lens and source distances.",
+      "kind": "single",
+      "expected": [
+        "einstein_radius"
+      ],
+      "predicted": [
+        "einstein_radius"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 989.4266128540039
+    },
+    {
+      "id": "l03",
+      "question": "Where are the lensed image positions for source position beta?",
+      "kind": "single",
+      "expected": [
+        "image_positions"
+      ],
+      "predicted": [
+        "image_positions"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 3658.8833332061768
+    },
+    {
+      "id": "l04",
+      "question": "Generate a microlensing light curve.",
+      "kind": "single",
+      "expected": [
+        "microlensing_light_curve"
+      ],
+      "predicted": [
+        "microlensing_light_curve"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1395.6067562103271
+    },
+    {
+      "id": "w01",
+      "question": "What is the chirp mass of a 30+30 solar mass binary?",
+      "kind": "single",
+      "expected": [
+        "chirp_mass"
+      ],
+      "predicted": [
+        "chirp_mass"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1560.7450008392334
+    },
+    {
+      "id": "w02",
+      "question": "How long until a binary merges from separation a?",
+      "kind": "single",
+      "expected": [
+        "merger_time"
+      ],
+      "predicted": [
+        "merger_time"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1219.7332382202148
+    },
+    {
+      "id": "w03",
+      "question": "Compute the orbital decay rate da/dt for a compact binary.",
+      "kind": "single",
+      "expected": [
+        "orbital_decay_rate"
+      ],
+      "predicted": [
+        "orbital_decay_rate"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 689.8844242095947
+    },
+    {
+      "id": "w04",
+      "question": "Evolve a binary under gravitational-wave emission.",
+      "kind": "single",
+      "expected": [
+        "evolve_binary"
+      ],
+      "predicted": [
+        "evolve_binary"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1113.9965057373047
+    },
+    {
+      "id": "w05",
+      "question": "What is the l=2,n=0 Schwarzschild quasinormal mode frequency?",
+      "kind": "single",
+      "expected": [
+        "schwarzschild_qnm"
+      ],
+      "predicted": [
+        "schwarzschild_qnm"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 904.1845798492432
+    },
+    {
+      "id": "w06",
+      "question": "Compute Kerr QNM frequencies for prograde modes.",
+      "kind": "single",
+      "expected": [
+        "kerr_qnm"
+      ],
+      "predicted": [
+        "kerr_qnm"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1153.036117553711
+    },
+    {
+      "id": "w07",
+      "question": "Generate a black hole ringdown waveform.",
+      "kind": "single",
+      "expected": [
+        "ringdown_waveform"
+      ],
+      "predicted": [
+        "ringdown_waveform"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1360.8009815216064
+    },
+    {
+      "id": "w08",
+      "question": "Generate a full binary black hole merger waveform.",
+      "kind": "single",
+      "expected": [
+        "binary_merger_waveform"
+      ],
+      "predicted": [
+        "binary_merger_waveform"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1667.980670928955
+    },
+    {
+      "id": "w09",
+      "question": "What is the detection horizon distance for a 30+30 Msun binary?",
+      "kind": "single",
+      "expected": [
+        "compute_horizon_distance"
+      ],
+      "predicted": [
+        "compute_horizon_distance"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 923.9552021026611
+    },
+    {
+      "id": "w10",
+      "question": "Compute the Fisher matrix for inspiral parameters.",
+      "kind": "single",
+      "expected": [
+        "fisher_matrix"
+      ],
+      "predicted": [
+        "fisher_matrix"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 884.9942684173584
+    },
+    {
+      "id": "w11",
+      "question": "What is the matched-filter SNR for this template and data?",
+      "kind": "single",
+      "expected": [
+        "matched_filter_snr"
+      ],
+      "predicted": [
+        "matched_filter_snr"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1155.1990509033203
+    },
+    {
+      "id": "w12",
+      "question": "Give a parameter estimation summary for a GW event.",
+      "kind": "single",
+      "expected": [
+        "parameter_estimation_summary"
+      ],
+      "predicted": [
+        "parameter_estimation_summary"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1832.7863216400146
+    },
+    {
+      "id": "c01",
+      "question": "What is the age of the universe in LCDM?",
+      "kind": "single",
+      "expected": [
+        "age_of_universe"
+      ],
+      "predicted": [
+        "age_of_universe"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1324.5353698730469
+    },
+    {
+      "id": "c02",
+      "question": "Solve the Friedmann equation for the scale factor a(t).",
+      "kind": "single",
+      "expected": [
+        "solve_friedmann"
+      ],
+      "predicted": [
+        "solve_friedmann"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1253.6234855651855
+    },
+    {
+      "id": "c03",
+      "question": "What is the Hubble parameter today (a=1)?",
+      "kind": "single",
+      "expected": [
+        "hubble_parameter"
+      ],
+      "predicted": [
+        "hubble_parameter"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1091.7375087738037
+    },
+    {
+      "id": "c04",
+      "question": "Compute luminosity and angular diameter distances at z=0.5.",
+      "kind": "single",
+      "expected": [
+        "cosmological_distances"
+      ],
+      "predicted": [
+        "cosmological_distances"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1152.1341800689697
+    },
+    {
+      "id": "c05",
+      "question": "Generate the symbolic FLRW metric for k=0.",
+      "kind": "single",
+      "expected": [
+        "flrw_metric_symbolic"
+      ],
+      "predicted": [
+        "flrw_metric_symbolic"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1657.9172611236572
+    },
+    {
+      "id": "c06",
+      "question": "Compute the CMB temperature power spectrum D_ell.",
+      "kind": "single",
+      "expected": [
+        "cmb_power_spectrum"
+      ],
+      "predicted": [
+        "cmb_power_spectrum"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1119.8194026947021
+    },
+    {
+      "id": "c07",
+      "question": "What is the CMB acoustic scale?",
+      "kind": "single",
+      "expected": [
+        "acoustic_scale"
+      ],
+      "predicted": [
+        "acoustic_scale"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1167.5994396209717
+    },
+    {
+      "id": "c08",
+      "question": "Where are the acoustic peak positions?",
+      "kind": "single",
+      "expected": [
+        "peak_positions"
+      ],
+      "predicted": [
+        "peak_positions"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 517.5681114196777
+    },
+    {
+      "id": "c09",
+      "question": "Summarize key CMB observables for Planck-like parameters.",
+      "kind": "single",
+      "expected": [
+        "cmb_observables"
+      ],
+      "predicted": [
+        "cmb_observables"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1175.9941577911377
+    },
+    {
+      "id": "c10",
+      "question": "What is the dark energy equation of state w(z) in CPL?",
+      "kind": "single",
+      "expected": [
+        "w_cpl"
+      ],
+      "predicted": [
+        "w_cpl"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1154.2775630950928
+    },
+    {
+      "id": "c11",
+      "question": "Compute the deceleration parameter q(z).",
+      "kind": "single",
+      "expected": [
+        "deceleration_parameter"
+      ],
+      "predicted": [
+        "deceleration_parameter"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1196.5351104736328
+    },
+    {
+      "id": "c12",
+      "question": "Solve cosmology in f(R) modified gravity.",
+      "kind": "single",
+      "expected": [
+        "f_R_cosmology"
+      ],
+      "predicted": [
+        "f_R_cosmology"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1317.819595336914
+    },
+    {
+      "id": "c13",
+      "question": "Compute slow-roll parameters for chaotic inflation.",
+      "kind": "single",
+      "expected": [
+        "slow_roll_parameters"
+      ],
+      "predicted": [
+        "slow_roll_parameters"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1226.9604206085205
+    },
+    {
+      "id": "c14",
+      "question": "How many e-folds of inflation occur?",
+      "kind": "single",
+      "expected": [
+        "number_of_efolds"
+      ],
+      "predicted": [
+        "number_of_efolds"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1647.914171218872
+    },
+    {
+      "id": "c15",
+      "question": "Compute inflationary observables n_s and r for Starobinsky inflation.",
+      "kind": "single",
+      "expected": [
+        "inflationary_observables"
+      ],
+      "predicted": [
+        "inflationary_observables"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": -1347.1131324768066
+    },
+    {
+      "id": "c16",
+      "question": "Compute the primordial scalar power spectrum P_s(k).",
+      "kind": "single",
+      "expected": [
+        "primordial_scalar_power_spectrum"
+      ],
+      "predicted": [
+        "primordial_scalar_power_spectrum"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1138.169765472412
+    },
+    {
+      "id": "c17",
+      "question": "What is the linear growth factor D(a)?",
+      "kind": "single",
+      "expected": [
+        "growth_factor"
+      ],
+      "predicted": [
+        "growth_factor"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1192.4595832824707
+    },
+    {
+      "id": "c18",
+      "question": "Compute the linear matter power spectrum P(k).",
+      "kind": "single",
+      "expected": [
+        "matter_power_spectrum"
+      ],
+      "predicted": [
+        "matter_power_spectrum"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 988.1033897399902
+    },
+    {
+      "id": "p01",
+      "question": "What is the 1PN perihelion advance per orbit?",
+      "kind": "single",
+      "expected": [
+        "perihelion_advance"
+      ],
+      "predicted": [
+        "perihelion_advance"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1228.0981540679932
+    },
+    {
+      "id": "p02",
+      "question": "Compute the 1PN orbital energy.",
+      "kind": "single",
+      "expected": [
+        "pn_energy_1pn"
+      ],
+      "predicted": [
+        "pn_energy_1pn"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 941.6203498840332
+    },
+    {
+      "id": "p03",
+      "question": "What is the leading-order GW flux from the quadrupole formula?",
+      "kind": "single",
+      "expected": [
+        "gravitational_wave_flux_quadrupole"
+      ],
+      "predicted": [
+        "gravitational_wave_flux_quadrupole"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1000.1084804534912
+    },
+    {
+      "id": "p04",
+      "question": "Solve the TOV equations for a neutron star with rho_c=1e17.",
+      "kind": "single",
+      "expected": [
+        "solve_tov"
+      ],
+      "predicted": [
+        "solve_tov"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1201.092004776001
+    },
+    {
+      "id": "p05",
+      "question": "Compute the neutron star mass-radius relation.",
+      "kind": "single",
+      "expected": [
+        "mass_radius_relation"
+      ],
+      "predicted": [
+        "mass_radius_relation"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1281.5208435058594
+    },
+    {
+      "id": "p06",
+      "question": "Estimate the tidal deformability of a 1.4 Msun neutron star.",
+      "kind": "single",
+      "expected": [
+        "tidal_deformability"
+      ],
+      "predicted": [
+        "tidal_deformability"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1975.588321685791
+    },
+    {
+      "id": "p07",
+      "question": "Extract ADM quantities for a static spacetime.",
+      "kind": "single",
+      "expected": [
+        "extract_adm_static"
+      ],
+      "predicted": [
+        "extract_adm_static"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1383.1181526184082
+    },
+    {
+      "id": "p08",
+      "question": "Evaluate the Hamiltonian constraint for a static metric.",
+      "kind": "single",
+      "expected": [
+        "hamiltonian_constraint_static"
+      ],
+      "predicted": [],
+      "top1_correct": false,
+      "any_expected_in_topk": false,
+      "parse_ok": false,
+      "error": "no json: ",
+      "latency_ms": 5600.885391235352
+    },
+    {
+      "id": "p09",
+      "question": "Extract BSSN variables from a 3-metric.",
+      "kind": "single",
+      "expected": [
+        "bssn_variables"
+      ],
+      "predicted": [
+        "bssn_variables"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1125.9372234344482
+    },
+    {
+      "id": "p10",
+      "question": "Solve the Regge-Wheeler equation for l=2.",
+      "kind": "single",
+      "expected": [
+        "solve_regge_wheeler"
+      ],
+      "predicted": [
+        "solve_regge_wheeler"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1163.740873336792
+    },
+    {
+      "id": "p11",
+      "question": "Solve the Zerilli equation.",
+      "kind": "single",
+      "expected": [
+        "solve_zerilli"
+      ],
+      "predicted": [
+        "solve_zerilli"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1059.8392486572266
+    },
+    {
+      "id": "p12",
+      "question": "Compute the gravitational wave strain h(t) from QNM parameters.",
+      "kind": "single",
+      "expected": [
+        "compute_gw_strain"
+      ],
+      "predicted": [
+        "compute_gw_strain"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1148.6785411834717
+    },
+    {
+      "id": "p13",
+      "question": "Compute linearized Riemann tensor for a metric perturbation h.",
+      "kind": "single",
+      "expected": [
+        "linearized_riemann"
+      ],
+      "predicted": [
+        "linearized_riemann"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1085.1678848266602
+    },
+    {
+      "id": "y01",
+      "question": "Parse the expression x^2 + sin(y).",
+      "kind": "single",
+      "expected": [
+        "parse_expression"
+      ],
+      "predicted": [
+        "parse_expression"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 2149.303674697876
+    },
+    {
+      "id": "y02",
+      "question": "Numerically evaluate the expression M/r^2 at M=1, r=2.",
+      "kind": "single",
+      "expected": [
+        "evaluate_expression"
+      ],
+      "predicted": [
+        "evaluate_expression"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1327.9449939727783
+    },
+    {
+      "id": "m01",
+      "question": "Create a Kerr black hole, then compute its scalar curvature and check if it vanishes.",
+      "kind": "multi",
+      "expected": [
+        "create_kerr",
+        "compute_scalar_curvature"
+      ],
+      "predicted": [
+        "create_kerr",
+        "compute_scalar_curvature"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 975.0552177429199
+    },
+    {
+      "id": "m02",
+      "question": "Build a Schwarzschild metric and classify its spacetime symmetries.",
+      "kind": "multi",
+      "expected": [
+        "create_schwarzschild",
+        "classify_symmetry"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "classify_symmetry"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": -1577.8136253356934
+    },
+    {
+      "id": "m03",
+      "question": "Create de Sitter spacetime and compute its Kretschmann scalar.",
+      "kind": "multi",
+      "expected": [
+        "create_desitter",
+        "compute_kretschmann"
+      ],
+      "predicted": [
+        "create_desitter",
+        "compute_kretschmann"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1137.4943256378174
+    },
+    {
+      "id": "m04",
+      "question": "For a solar-mass black hole, compute Hawking temperature and evaporation time.",
+      "kind": "multi",
+      "expected": [
+        "hawking_temperature",
+        "evaporation_time"
+      ],
+      "predicted": [
+        "hawking_temperature",
+        "evaporation_time"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 800.645112991333
+    },
+    {
+      "id": "m05",
+      "question": "Create Schwarzschild, integrate a geodesic, and report the trajectory.",
+      "kind": "multi",
+      "expected": [
+        "create_schwarzschild",
+        "solve_geodesic"
+      ],
+      "predicted": [
+        "create_schwarzschild",
+        "solve_geodesic"
+      ],
+      "top1_correct": true,
+      "any_expected_in_topk": true,
+      "parse_ok": true,
+      "error": null,
+      "latency_ms": 1355.684757232666
+    }
+  ]
+}

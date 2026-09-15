@@ -208,6 +208,7 @@ research/
 - **研究日志**: 每次假设/实验/结论/工具调用都记录为结构化 event
 - **研究闭环**: `ResearchLoop.run("question")` 自动分解→执行→记录
 - **80+ agent tools**: `tool_registry.py` 统一注册，ResearchLoop / LLM schema / GeometrySession 共用
+- **顺序链执行**: LLM 可返回 `tools: [t1, t2, ...]`；工厂 `metric_name` 自动注入后续 consumer
 
 ## Agent 工具面
 
@@ -216,13 +217,18 @@ research/
 - **MetricStore**（`metric_store.py`）命名交接活体 C++ Metric；工厂 `create_*` 写入 store，消费者收 `metric_name` 或 `diagonal`+`coords`
 - **ResearchLoop** 使用 registry handler 表与 `openai_tools_payload()` 动态 LLM schema
 - **GeometrySession.define_metric** 同步注册到 MetricStore
+- **顺序链**：hypothesis 可含 `tools` 数组；执行器串行调用并把上一步 `metric_name` 注入下一步
 
 ```python
+from orchestrator.research_loop import ResearchLoop
+loop = ResearchLoop()
+# pattern 路径自动走链：create_schwarzschild → compute_scalar_curvature
+loop.run("What is the scalar curvature of Schwarzschild spacetime?")
+
 from orchestrator.tool_registry import execute_tool, registry_summary
-print(registry_summary()["count"])  # 78
+print(registry_summary()["count"])  # 80
 execute_tool("create_schwarzschild", {"M": 1})
 execute_tool("compute_scalar_curvature", {"metric_name": "schwarzschild"})
-execute_tool("age_of_universe", {})
 ```
 
 ## 与大荒界生态的关系
