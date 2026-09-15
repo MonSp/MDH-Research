@@ -120,24 +120,32 @@ TOOLS = [
 
 
 class GeometrySession:
-    """Manages stateful geometry computation sessions."""
+    """Stateful geometry session backed by the process MetricStore.
+
+    define_metric registers into MetricStore so registry tools can
+    resolve the same metric by name.
+    """
 
     def __init__(self):
         if rc is None:
             raise RuntimeError("C++ bindings not available. Build with cmake first.")
+        from .metric_store import get_store
+
+        self._store = get_store()
         self._manifolds: dict[str, Any] = {}
         self._metrics: dict[str, Any] = {}
+        self._coords: dict[str, list[str]] = {}
 
     def define_manifold(self, name: str, coordinates: list[str]) -> dict:
         m = rc.geometry.Manifold(name, coordinates)
         self._manifolds[name] = m
+        self._coords[name] = list(coordinates)
         return {"name": name, "dimension": m.dimension(), "coordinates": coordinates}
 
     def define_metric(self, manifold_name: str, components: list[list[str]]) -> dict:
         m = self._manifolds.get(manifold_name)
         if m is None:
             return {"error": f"Manifold '{manifold_name}' not defined"}
-        # Parse component strings into Expression objects (simplified: numeric literals)
         expr_components = []
         for row in components:
             expr_row = []
@@ -146,35 +154,45 @@ class GeometrySession:
             expr_components.append(expr_row)
         g = rc.geometry.Metric(m, expr_components)
         self._metrics[manifold_name] = g
-        return {"manifold": manifold_name, "dimension": g.dimension()}
+        coords = self._coords.get(manifold_name, [])
+        self._store.put(manifold_name, g, m, coords, {})
+        return {"manifold": manifold_name, "dimension": g.dimension(), "metric_name": manifold_name}
 
     def compute_christoffel(self, metric_name: str) -> dict:
-        g = self._metrics.get(metric_name)
+        g = self._resolve(metric_name)
         if g is None:
             return {"error": f"Metric '{metric_name}' not defined"}
         Gamma = g.christoffel_symbols()
         return {"metric": metric_name, "type": "christoffel", "rank": 3}
 
     def compute_riemann(self, metric_name: str) -> dict:
-        g = self._metrics.get(metric_name)
+        g = self._resolve(metric_name)
         if g is None:
             return {"error": f"Metric '{metric_name}' not defined"}
         R = g.riemann_tensor()
         return {"metric": metric_name, "type": "riemann", "rank": 4}
 
     def compute_ricci(self, metric_name: str) -> dict:
-        g = self._metrics.get(metric_name)
+        g = self._resolve(metric_name)
         if g is None:
             return {"error": f"Metric '{metric_name}' not defined"}
         Ric = g.ricci_tensor()
         return {"metric": metric_name, "type": "ricci", "rank": 2}
 
     def compute_scalar_curvature(self, metric_name: str) -> dict:
-        g = self._metrics.get(metric_name)
+        g = self._resolve(metric_name)
         if g is None:
             return {"error": f"Metric '{metric_name}' not defined"}
         R = g.scalar_curvature()
         return {"metric": metric_name, "type": "scalar_curvature", "value": R.to_string()}
+
+    def _resolve(self, metric_name: str):
+        if metric_name in self._metrics:
+            return self._metrics[metric_name]
+        try:
+            return self._store.get_metric(metric_name)
+        except KeyError:
+            return None
 
     def execute_tool(self, name: str, arguments: dict) -> dict:
         dispatch = {
@@ -187,7 +205,15 @@ class GeometrySession:
         }
         handler = dispatch.get(name)
         if handler is None:
-            return {"error": f"Unknown tool: {name}"}
+            # Fall through to central registry for the full physics tool surface
+            try:
+                from .tool_registry import execute_tool as registry_execute
+
+                from .serialize import serialize_result
+
+                return serialize_result(registry_execute(name, arguments))
+            except Exception as e:
+                return {"error": f"Unknown tool: {name} ({e})"}
         return handler()
 
     def _parse_expr(self, s: str):
