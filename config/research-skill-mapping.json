@@ -140,5 +140,55 @@
     "description": "SymPy 桥接 = 炼算，C++ Expression ↔ SymPy 双向转换",
     "tools": ["expr_to_sympy", "sympy_to_expr", "tensor_to_sympy"],
     "module": "src/orchestrator/sympy_bridge.py"
+  },
+
+  "causal_structure": {
+    "gameAbility": "观象",
+    "category": "Research",
+    "description": "因果结构 = 观象，类时/类光/类空、光锥、奇点分析",
+    "tools": ["classify_vector", "light_cone_at_point", "singularity_analysis"],
+    "module": "src/orchestrator/causal.py"
+  },
+  "field_equations": {
+    "gameAbility": "参悟",
+    "category": "Research",
+    "description": "场方程 = 参悟，Einstein 张量、完美流体源、残差",
+    "tools": ["field_equation_residual_numerical", "compute_einstein"],
+    "module": "src/orchestrator/field_equations.py"
+  },
+  "tetrad": {
+    "gameAbility": "炼算",
+    "category": "Research",
+    "description": "标架 = 炼算，正交 tetrad 与自旋联络",
+    "tools": ["build_tetrad_diagonal"],
+    "module": "src/orchestrator/tetrad.py"
+  },
+  "newman_penrose": {
+    "gameAbility": "参悟",
+    "category": "Research",
+    "description": "Newman-Penrose = 参悟，零标架与 Petrov 分类",
+    "tools": ["classify_petrov_type"],
+    "module": "src/orchestrator/newman_penrose.py"
+  },
+  "post_newtonian": {
+    "gameAbility": "推演",
+    "category": "Research",
+    "description": "后牛顿 = 推演，1PN 能量、近日点进动、四极矩通量",
+    "tools": ["pn_energy_1pn", "perihelion_advance", "gravitational_wave_flux_quadrupole"],
+    "module": "src/orchestrator/post_newtonian.py"
+  },
+  "linearized_gravity": {
+    "gameAbility": "推演",
+    "category": "Research",
+    "description": "线性化引力 = 推演，微扰 Riemann/Ricci、TT 波",
+    "tools": ["linearized_riemann"],
+    "module": "src/orchestrator/perturbation.py"
+  },
+  "adm_bssn": {
+    "gameAbility": "推演",
+    "category": "Research",
+    "description": "ADM/BSSN = 推演，3+1 分解与共形变量",
+    "tools": ["extract_adm_static", "hamiltonian_constraint_static", "bssn_variables"],
+    "module": "src/orchestrator/adm.py"
   }
 }

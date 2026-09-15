@@ -85,6 +85,13 @@ research/
 - `docs(scope):` 文档
 - scope: `symbol`, `tensor`, `geometry`, `bindings`, `agents`, `orchestrator`, `tests`, `cmake`
 
+## Agent 工具面（tool registry）
+
+- 真相源：`config/research-skill-mapping.json` + `src/orchestrator/tool_registry.py`
+- 新增物理能力：orchestrator 模块实现函数 → mapping 增加 tool 名 → registry 注册 `ToolSpec`（必要时写 wrapper）
+- Metric 交接：工厂 put 进 `MetricStore`，消费者用 `metric_name`；禁止把活体 C++ Metric 塞进 JSON 返回值
+- ResearchLoop / GeometrySession / LLM schema 均从 registry 取工具，不要在 research_loop 里再写死 tool 表
+
 ## 与大荒界生态的关系
 
 - 独立 git 子模块，与 company、game、kernel 平级

@@ -1,7 +1,7 @@
 """ResearchLoop — minimal viable research cycle.
 
 Implements the hypothesis → experiment → analysis → conclusion loop
-using the orchestrator's existing modules and the ResearchJournal.
+using the central tool registry and the ResearchJournal.
 
 Usage:
     from orchestrator.research_loop import ResearchLoop
@@ -28,73 +28,36 @@ except ImportError:
     rc = None
 
 from .journal import ResearchJournal
+from .serialize import serialize_result
 
 
-# ── Tool registry: maps tool names to actual functions ──
+# Legacy pattern params → registry conventions
+_LEGACY_PARAM_ALIASES = {
+    "metric_str": "diagonal",
+    "mass_kg": "M",
+}
+
 
 def _get_tools():
-    """Lazy-load tool functions from orchestrator modules."""
-    tools = {}
+    """Handler map from the central tool registry (names + aliases)."""
+    from .tool_registry import get_handler_map
 
-    def compute_christoffel(metric_str, coords, params=None):
-        m = rc.geometry.Manifold("m", coords)
-        g = rc.geometry.Metric.from_diagonal(m, metric_str if isinstance(metric_str, list) else [metric_str])
-        return g.christoffel_symbols()
+    return get_handler_map()
 
-    def compute_scalar_curvature(metric_str, coords):
-        m = rc.geometry.Manifold("m", coords)
-        g = rc.geometry.Metric.from_diagonal(m, metric_str if isinstance(metric_str, list) else [metric_str])
-        return g.scalar_curvature()
 
-    def compute_kretschmann(metric_str, coords):
-        m = rc.geometry.Manifold("m", coords)
-        g = rc.geometry.Metric.from_diagonal(m, metric_str if isinstance(metric_str, list) else [metric_str])
-        return g.kretschmann_scalar()
+def _normalize_params(params: dict) -> dict:
+    p = {}
+    for k, v in (params or {}).items():
+        p[_LEGACY_PARAM_ALIASES.get(k, k)] = v
+    return p
 
-    def create_blackhole(bh_type, params):
-        from .blackholes import (create_schwarzschild, create_kerr,
-                                  create_reissner_nordstrom, create_desitter)
-        factory = {
-            "schwarzschild": create_schwarzschild,
-            "kerr": create_kerr,
-            "reissner_nordstrom": create_reissner_nordstrom,
-            "desitter": create_desitter,
-        }
-        fn = factory.get(bh_type)
-        if fn is None:
-            return {"error": f"Unknown BH type: {bh_type}"}
-        return fn(**params)
 
-    def solve_geodesic_tool(metric_str, coords, x0, u0, tau_max, params=None):
-        from .geodesic import solve_geodesic
-        import numpy as np
-        m = rc.geometry.Manifold("m", coords)
-        g = rc.geometry.Metric.from_diagonal(metric_str if isinstance(metric_str, list) else [metric_str])
-        taus, states = solve_geodesic(g, coords, np.array(x0), np.array(u0), tau_max, params=params)
-        return {"taus": taus.tolist(), "states": states.tolist()}
+def _resolve_tool_name(name: str, tools: dict[str, Any]) -> str:
+    if name in tools:
+        return name
+    from .tool_registry import resolve_tool_name
 
-    def hawking_temperature_tool(mass_kg):
-        from .hawking import hawking_temperature
-        return hawking_temperature(mass_kg)
-
-    def solve_friedmann_tool(params):
-        from .cosmology import solve_friedmann
-        return solve_friedmann(params)
-
-    def cmb_power_spectrum_tool(params):
-        from .cmb import cmb_power_spectrum
-        return cmb_power_spectrum(**params)
-
-    tools["compute_christoffel"] = compute_christoffel
-    tools["compute_scalar_curvature"] = compute_scalar_curvature
-    tools["compute_kretschmann"] = compute_kretschmann
-    tools["create_blackhole"] = create_blackhole
-    tools["solve_geodesic"] = solve_geodesic_tool
-    tools["hawking_temperature"] = hawking_temperature_tool
-    tools["solve_friedmann"] = solve_friedmann_tool
-    tools["cmb_power_spectrum"] = cmb_power_spectrum_tool
-
-    return tools
+    return resolve_tool_name(name)
 
 
 class ResearchLoop:
@@ -125,6 +88,7 @@ class ResearchLoop:
         hypotheses = self._hypothesize(question)
 
         results = []
+        hyp_id = None
         for hyp in hypotheses:
             experiment = self._design_experiment(hyp)
             hyp_id = self.journal.log_hypothesis(
@@ -135,7 +99,7 @@ class ResearchLoop:
 
             exp_id = self.journal.log_experiment(
                 tool=experiment["tool"],
-                params=experiment["params"],
+                params=serialize_result(experiment["params"]),
                 hypothesis_id=hyp_id,
             )
 
@@ -143,11 +107,15 @@ class ResearchLoop:
             try:
                 result = self._execute(experiment)
                 duration = (time.time() - start) * 1000
-                self.journal.log_observation(exp_id, result, duration_ms=duration, success=True)
+                self.journal.log_observation(
+                    exp_id, serialize_result(result), duration_ms=duration, success=True
+                )
                 results.append({"hypothesis": hyp, "result": result, "success": True})
             except Exception as e:
                 duration = (time.time() - start) * 1000
-                self.journal.log_observation(exp_id, str(e), duration_ms=duration, success=False)
+                self.journal.log_observation(
+                    exp_id, str(e), duration_ms=duration, success=False
+                )
                 self.journal.log_error(experiment["tool"], str(e))
                 results.append({"hypothesis": hyp, "error": str(e), "success": False})
 
@@ -183,29 +151,32 @@ class ResearchLoop:
     def _hypothesize_llm(self, question: str) -> list[dict]:
         """Use LLM to decompose a question into testable hypotheses.
 
-        Expects LLM to return JSON matching the tool schema.
+        Tool schemas come from the central registry.
         """
+        from .tool_registry import openai_tools_payload, registry_summary
+
+        summary = registry_summary()
+        tools_payload = openai_tools_payload()
+        # Keep the system prompt bounded: include names + a compact schema dump
         tools_desc = json.dumps({
-            "tools": list(self.tools.keys()),
-            "tool_schemas": {
-                "compute_scalar_curvature": {"params": {"metric_str": "list[str]", "coords": "list[str]"}},
-                "compute_kretschmann": {"params": {"metric_str": "list[str]", "coords": "list[str]"}},
-                "compute_christoffel": {"params": {"metric_str": "list[str]", "coords": "list[str]"}},
-                "create_blackhole": {"params": {"bh_type": "str", "params": "dict"}},
-                "solve_geodesic": {"params": {"metric_str": "list[str]", "coords": "list[str]", "x0": "list[float]", "u0": "list[float]", "tau_max": "float"}},
-                "hawking_temperature": {"params": {"mass_kg": "float"}},
-                "solve_friedmann": {"params": {"params": "dict"}},
-                "cmb_power_spectrum": {"params": {"params": "dict"}},
-            },
+            "tool_names": summary["names"],
+            "n_tools": summary["count"],
+            "by_category": summary["by_category"],
+            "tools": tools_payload,
             "known_metrics": {
-                "schwarzschild": ["-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"],
-                "minkowski": ["-1", "1", "1", "1"],
-                "kerr_diagonal": ["-(1 - 2*M*r/(r^2 + a^2*cos(theta)^2))", "(r^2 + a^2*cos(theta)^2)/(r^2 - 2*M*r + a^2)", "r^2 + a^2*cos(theta)^2", "r^2 * sin(theta)^2"],
-                "de_sitter": ["-(1 - L*r^2/3)", "(1 - L*r^2/3)^(-1)", "r^2", "r^2 * sin(theta)^2"],
+                "schwarzschild": {
+                    "diagonal": ["-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"],
+                    "coords": ["t", "r", "theta", "phi"],
+                },
+                "minkowski": {"diagonal": ["-1", "1", "1", "1"], "coords": ["t", "x", "y", "z"]},
             },
+            "metric_handoff": (
+                "Factories (create_*) store a MetricStore entry and return metric_name. "
+                "Consumers accept metric_name, or diagonal+coords to create on the fly."
+            ),
         }, indent=2)
 
-        system_prompt = f"""You are a physics research assistant. Given a research question, 
+        system_prompt = f"""You are a physics research assistant. Given a research question,
 decompose it into testable hypotheses, each with a tool call.
 
 Available tools and schemas:
@@ -222,12 +193,11 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
   {{
     "prediction": "Kretschmann scalar K = 48M²/r⁶",
     "tool": "compute_kretschmann",
-    "params": {{"metric_str": ["-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"], "coords": ["t", "r", "theta", "phi"]}},
+    "params": {{"diagonal": ["-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"], "coords": ["t", "r", "theta", "phi"], "params": {{"M": 1}}}},
     "assumptions": ["Schwarzschild metric", "M > 0", "r > 2M"]
   }}
 ]"""
 
-        # Call LLM via OpenAI-compatible API
         import httpx
 
         api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("LLM_API_KEY", "")
@@ -251,7 +221,6 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
         response.raise_for_status()
         content = response.json()["choices"][0]["message"]["content"]
 
-        # Parse JSON (handle both array and object wrappers)
         content = content.strip()
         if content.startswith("```"):
             content = content.split("```")[1]
@@ -261,11 +230,16 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
         if isinstance(hypotheses, dict):
             hypotheses = hypotheses.get("hypotheses", [hypotheses])
 
-        # Validate
         validated = []
         for h in hypotheses:
-            if h.get("tool") in self.tools and "params" in h:
-                validated.append(h)
+            tool = h.get("tool")
+            if not tool or "params" not in h:
+                continue
+            try:
+                _resolve_tool_name(tool, self.tools)
+            except KeyError:
+                continue
+            validated.append(h)
 
         if not validated:
             raise ValueError("LLM returned no valid hypotheses")
@@ -277,14 +251,21 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
         q = question.lower()
         hypotheses = []
 
+        schwarzschild_diag = [
+            "-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"
+        ]
+        schwarzschild_coords = ["t", "r", "theta", "phi"]
+
         if "curvature" in q or "scalar" in q:
             if "schwarzschild" in q:
                 hypotheses.append({
                     "prediction": "Schwarzschild scalar curvature R = 0 (vacuum solution)",
                     "tool": "compute_scalar_curvature",
                     "params": {
-                        "metric_str": ["-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"],
-                        "coords": ["t", "r", "theta", "phi"],
+                        "diagonal": schwarzschild_diag,
+                        "coords": schwarzschild_coords,
+                        "params": {"M": 1},
+                        "name": "schwarzschild",
                     },
                     "assumptions": ["Schwarzschild metric", "vacuum Einstein equations"],
                 })
@@ -293,8 +274,9 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
                     "prediction": "Minkowski scalar curvature R = 0 (flat spacetime)",
                     "tool": "compute_scalar_curvature",
                     "params": {
-                        "metric_str": ["-1", "1", "1", "1"],
+                        "diagonal": ["-1", "1", "1", "1"],
                         "coords": ["t", "x", "y", "z"],
+                        "name": "minkowski",
                     },
                     "assumptions": ["Minkowski metric", "flat spacetime"],
                 })
@@ -305,8 +287,10 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
                     "prediction": "Kretschmann scalar K = 48M²/r⁶",
                     "tool": "compute_kretschmann",
                     "params": {
-                        "metric_str": ["-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"],
-                        "coords": ["t", "r", "theta", "phi"],
+                        "diagonal": schwarzschild_diag,
+                        "coords": schwarzschild_coords,
+                        "params": {"M": 1},
+                        "name": "schwarzschild",
                     },
                     "assumptions": ["Schwarzschild metric"],
                 })
@@ -315,7 +299,7 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
             hypotheses.append({
                 "prediction": "Hawking temperature T_H = ℏc³/(8πGMk_B)",
                 "tool": "hawking_temperature",
-                "params": {"mass_kg": 1.989e30},
+                "params": {"M": 1.989e30},
                 "assumptions": ["1 solar mass black hole"],
             })
 
@@ -324,8 +308,9 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
                 "prediction": "Timelike geodesic in flat spacetime is a straight line",
                 "tool": "solve_geodesic",
                 "params": {
-                    "metric_str": ["-1", "1", "1", "1"],
+                    "diagonal": ["-1", "1", "1", "1"],
                     "coords": ["t", "x", "y", "z"],
+                    "name": "minkowski_geo",
                     "x0": [0, 0, 0, 0],
                     "u0": [1, 0.5, 0, 0],
                     "tau_max": 10,
@@ -336,7 +321,7 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
         elif "friedmann" in q or "universe" in q or "age" in q:
             hypotheses.append({
                 "prediction": "Universe age ≈ 13.8 Gyr with Planck parameters",
-                "tool": "solve_friedmann",
+                "tool": "age_of_universe",
                 "params": {"params": {}},
                 "assumptions": ["ΛCDM", "Planck 2018 parameters"],
             })
@@ -346,8 +331,9 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
                 "prediction": "Computing the requested quantity",
                 "tool": "compute_scalar_curvature",
                 "params": {
-                    "metric_str": ["-1", "1", "1", "1"],
+                    "diagonal": ["-1", "1", "1", "1"],
                     "coords": ["t", "x", "y", "z"],
+                    "name": "minkowski_default",
                 },
                 "assumptions": ["Default to flat spacetime for unknown queries"],
             })
@@ -362,13 +348,53 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
 
     def _execute(self, experiment: dict) -> Any:
         tool_name = experiment["tool"]
-        params = experiment["params"]
+        params = _normalize_params(experiment["params"])
 
-        tool_fn = self.tools.get(tool_name)
-        if tool_fn is None:
-            raise ValueError(f"Unknown tool: {tool_name}")
+        try:
+            resolved = _resolve_tool_name(tool_name, self.tools)
+        except KeyError as e:
+            raise ValueError(f"Unknown tool: {tool_name}") from e
 
-        return tool_fn(**params)
+        tool_fn = self.tools[resolved]
+        start = time.time()
+        try:
+            try:
+                result = tool_fn(**params)
+            except TypeError:
+                import inspect
+
+                sig = inspect.signature(tool_fn)
+                if any(
+                    p.kind is inspect.Parameter.VAR_KEYWORD
+                    for p in sig.parameters.values()
+                ):
+                    raise
+                filtered = {k: v for k, v in params.items() if k in sig.parameters}
+                result = tool_fn(**filtered)
+        except Exception as e:
+            duration = (time.time() - start) * 1000
+            try:
+                self.journal.log_tool_call(
+                    resolved,
+                    serialize_result(params),
+                    {"error": str(e)},
+                    duration_ms=duration,
+                )
+            except Exception:
+                pass
+            raise
+
+        duration = (time.time() - start) * 1000
+        try:
+            self.journal.log_tool_call(
+                resolved,
+                serialize_result(params),
+                serialize_result(result),
+                duration_ms=duration,
+            )
+        except Exception:
+            pass
+        return result
 
     def _analyze(self, question: str, results: list[dict]) -> dict:
         """Analyze results and form a conclusion.
@@ -399,7 +425,9 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
                     try:
                         val = result.evaluate(pt)
                         if abs(val) < 1e-8:
-                            evidence.append(f"CONFIRMED: {pred} — numerically verified as 0 at {pt}")
+                            evidence.append(
+                                f"CONFIRMED: {pred} — numerically verified as 0 at {pt}"
+                            )
                             verified += 1
                             break
                         else:
@@ -410,11 +438,15 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
                     s = result.to_string()
                     evidence.append(f"RESULT: {pred}: {s[:200]}")
             elif isinstance(result, dict):
-                evidence.append(f"RESULT: {pred}: {result}")
+                evidence.append(f"RESULT: {pred}: {serialize_result(result)}")
             else:
-                evidence.append(f"RESULT: {pred}: {str(result)[:200]}")
+                evidence.append(f"RESULT: {pred}: {str(serialize_result(result))[:200]}")
 
-        verdict = "Hypotheses verified" if verified > 0 else "Experiments completed (symbolic simplification pending)"
+        verdict = (
+            "Hypotheses verified"
+            if verified > 0
+            else "Experiments completed (symbolic simplification pending)"
+        )
         return {
             "verdict": verdict,
             "evidence": evidence,

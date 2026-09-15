@@ -204,9 +204,26 @@ research/
 ```
 
 - **4 个 skill 类别**: compute / analyze / experiment / report
-- **20 个研究 skill** 映射到修仙能力 (炼算/参悟/推演/观象)
-- **研究日志**: 每次假设/实验/结论都记录为结构化 event
+- **27 个研究 skill** 映射到修仙能力 (炼算/参悟/推演/观象)
+- **研究日志**: 每次假设/实验/结论/工具调用都记录为结构化 event
 - **研究闭环**: `ResearchLoop.run("question")` 自动分解→执行→记录
+- **80+ agent tools**: `tool_registry.py` 统一注册，ResearchLoop / LLM schema / GeometrySession 共用
+
+## Agent 工具面
+
+`src/orchestrator/tool_registry.py` 是 agent 可调用物理工具的唯一注册表（与 `config/research-skill-mapping.json` 对齐）：
+
+- **MetricStore**（`metric_store.py`）命名交接活体 C++ Metric；工厂 `create_*` 写入 store，消费者收 `metric_name` 或 `diagonal`+`coords`
+- **ResearchLoop** 使用 registry handler 表与 `openai_tools_payload()` 动态 LLM schema
+- **GeometrySession.define_metric** 同步注册到 MetricStore
+
+```python
+from orchestrator.tool_registry import execute_tool, registry_summary
+print(registry_summary()["count"])  # 78
+execute_tool("create_schwarzschild", {"M": 1})
+execute_tool("compute_scalar_curvature", {"metric_name": "schwarzschild"})
+execute_tool("age_of_universe", {})
+```
 
 ## 与大荒界生态的关系
 
