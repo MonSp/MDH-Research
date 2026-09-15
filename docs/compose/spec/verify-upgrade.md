@@ -3,7 +3,7 @@ feature: verify-upgrade
 status: delivered
 updated: 2026-09-15
 branch: feat/verify-upgrade
-commits: 058c239..HEAD
+commits: 058c239..73d5010
 ---
 
 # 验证升级：SymPy 化简 + 场方程残差门禁
