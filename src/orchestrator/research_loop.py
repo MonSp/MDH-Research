@@ -152,6 +152,13 @@ class ResearchLoop:
                 step_results = self._execute_chain(steps)
                 duration = (time.time() - start) * 1000
                 last = step_results[-1]["result"]
+                metric_name = None
+                for s in step_results:
+                    res = s.get("result")
+                    if isinstance(res, dict) and res.get("metric_name"):
+                        metric_name = res["metric_name"]
+                    elif s.get("params", {}).get("metric_name"):
+                        metric_name = s["params"]["metric_name"]
                 self.journal.log_observation(
                     exp_id,
                     serialize_result({
@@ -168,6 +175,7 @@ class ResearchLoop:
                     "hypothesis": hyp,
                     "steps": step_results,
                     "result": last,
+                    "metric_name": metric_name,
                     "success": True,
                 })
             except Exception as e:
@@ -525,6 +533,21 @@ Example multi-step chain:
         return result
 
     def _analyze(self, question: str, results: list[dict]) -> dict:
+        from .verification import (
+            gate_counts_as_verified,
+            numeric_eval_is_zero,
+            should_run_vacuum_gate,
+            sympy_is_zero,
+            vacuum_residual_check,
+        )
+        from .metric_store import get_store
+
+        empty_verification = {
+            "numeric_confirmed": 0,
+            "symbolic_confirmed": 0,
+            "residual_gates": [],
+        }
+
         successful = [r for r in results if r.get("success")]
         failed = [r for r in results if not r.get("success")]
 
@@ -532,13 +555,35 @@ Example multi-step chain:
             return {
                 "verdict": "All experiments failed",
                 "evidence": [r.get("error", "unknown") for r in failed],
+                "verification": dict(empty_verification),
             }
 
-        evidence = []
-        verified = 0
+        evidence: list[str] = []
+        numeric_confirmed = 0
+        symbolic_confirmed = 0
+        residual_gates: list[dict] = []
+        any_confirmed = False
+        gate_failed = False
+
         for r in successful:
             pred = r["hypothesis"]["prediction"]
-            # Prefer checking every step result that can be numerically evaluated
+            tools = [s.get("tool") for s in (r.get("steps") or [])]
+            metric_name = r.get("metric_name")
+            extra_params: dict[str, float] = {}
+            if metric_name:
+                try:
+                    extra_params = dict(get_store().get(metric_name).get("params") or {})
+                except Exception:
+                    extra_params = {}
+
+            # numeric points: coords + metric params bound
+            test_points = [
+                {"t": 0, "r": 8, "theta": 1.5708, "phi": 0,
+                 "x": 3, "y": 4, "z": 0, **extra_params},
+                {"t": 0, "r": 15, "theta": 1.2, "phi": 0.4,
+                 "x": 1, "y": 2, "z": 2, **extra_params},
+            ]
+
             candidates = []
             if r.get("steps"):
                 candidates = [s.get("result") for s in r["steps"] if "result" in s]
@@ -546,44 +591,96 @@ Example multi-step chain:
                 candidates = [r["result"]]
 
             for result in candidates:
-                if hasattr(result, "evaluate"):
-                    test_points = [
-                        {"M": 1, "r": 6, "theta": 1.5708, "phi": 0, "t": 0},
-                        {"M": 1, "r": 10, "theta": 1.5708, "phi": 0, "t": 0},
-                    ]
-                    for pt in test_points:
-                        try:
-                            val = result.evaluate(pt)
-                            if abs(val) < 1e-8:
-                                evidence.append(
-                                    f"CONFIRMED: {pred} — numerically verified as 0 at {pt}"
-                                )
-                                verified += 1
-                                break
-                            evidence.append(
-                                f"RESULT: {pred} — evaluates to {val} at {pt}"
-                            )
-                        except Exception:
-                            pass
-                    else:
-                        s = result.to_string()
-                        evidence.append(f"RESULT: {pred}: {s[:200]}")
-                elif isinstance(result, dict):
-                    evidence.append(f"RESULT: {pred}: {serialize_result(result)}")
-                else:
+                if not hasattr(result, "evaluate"):
+                    if isinstance(result, dict):
+                        continue
                     evidence.append(
                         f"RESULT: {pred}: {str(serialize_result(result))[:200]}"
                     )
+                    continue
 
-        verdict = (
-            "Hypotheses verified"
-            if verified > 0
-            else "Experiments completed (symbolic simplification pending)"
-        )
+                # 1) SymPy first (authoritative for identically zero)
+                is_zero = sympy_is_zero(result, timeout_s=5.0)
+                if is_zero is True:
+                    symbolic_confirmed += 1
+                    any_confirmed = True
+                    evidence.append(
+                        f"CONFIRMED: {pred} — symbolically simplified to 0 (SymPy)"
+                    )
+                    continue
+
+                # 2) Numeric only when free symbols are fully bound
+                num_zero, sample, note = numeric_eval_is_zero(
+                    result, test_points, extra_params=extra_params
+                )
+                if num_zero is True:
+                    numeric_confirmed += 1
+                    any_confirmed = True
+                    evidence.append(
+                        f"CONFIRMED: {pred} — numerically verified as 0 (sample={sample})"
+                    )
+                elif num_zero is False:
+                    evidence.append(
+                        f"RESULT: {pred} — nonzero (numeric sample={sample})"
+                    )
+                elif is_zero is False:
+                    evidence.append(f"RESULT: {pred} — nonzero (sympy)")
+                else:
+                    evidence.append(
+                        f"RESULT: {pred} — undecidable numeric ({note}); sympy-skipped"
+                    )
+
+            # 3) vacuum residual gate (known vacuum factories only)
+            if metric_name and should_run_vacuum_gate(pred, tools):
+                store = get_store()
+                try:
+                    entry = store.get(metric_name)
+                    gate = vacuum_residual_check(
+                        entry["metric"],
+                        entry["coord_names"],
+                        params=entry.get("params") or {},
+                        points=None,
+                        tol=1e-4,
+                    )
+                except KeyError:
+                    # spec: MetricStore miss → skip gate, do not fail verdict
+                    continue
+                except Exception as e:
+                    gate = {"passed": False, "error": str(e), "max_abs": None}
+
+                gate["metric_name"] = metric_name
+                residual_gates.append(gate)
+                if gate.get("passed"):
+                    if gate_counts_as_verified(pred):
+                        any_confirmed = True
+                    evidence.append(
+                        f"GATE PASS: {pred} — field-equation residual "
+                        f"max|G_μν|={gate.get('max_abs')}"
+                    )
+                else:
+                    if gate_counts_as_verified(pred):
+                        gate_failed = True
+                    evidence.append(
+                        f"GATE FAIL: {pred} — residual max|G_μν|="
+                        f"{gate.get('max_abs')} ({gate.get('error') or ''})"
+                    )
+
+        if any_confirmed:
+            verdict = "Hypotheses verified"
+        elif gate_failed:
+            verdict = "Experiments completed (field-equation residual nonzero)"
+        else:
+            verdict = "Experiments completed (symbolic simplification pending)"
+
         return {
             "verdict": verdict,
             "evidence": evidence,
             "n_experiments": len(successful),
             "n_failures": len(failed),
-            "n_verified": verified,
+            "n_verified": numeric_confirmed + symbolic_confirmed,
+            "verification": {
+                "numeric_confirmed": numeric_confirmed,
+                "symbolic_confirmed": symbolic_confirmed,
+                "residual_gates": residual_gates,
+            },
         }
