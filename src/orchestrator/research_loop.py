@@ -1,13 +1,8 @@
-"""ResearchLoop — minimal viable research cycle.
+"""ResearchLoop — hypothesis → chain of tools → analysis → conclusion.
 
-Implements the hypothesis → experiment → analysis → conclusion loop
-using the central tool registry and the ResearchJournal.
-
-Usage:
-    from orchestrator.research_loop import ResearchLoop
-
-    loop = ResearchLoop()
-    result = loop.run("What is the scalar curvature of Schwarzschild spacetime?")
+Supports single-tool hypotheses (legacy `tool`/`params`) and sequential
+tool chains (`tools` list). Factory outputs (`metric_name`) are threaded
+into later metric-consuming steps automatically.
 """
 
 from __future__ import annotations
@@ -16,6 +11,7 @@ import sys
 import os
 import time
 import json
+from dataclasses import dataclass, field
 from typing import Any
 
 BUILD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "build", "src", "bindings")
@@ -31,15 +27,19 @@ from .journal import ResearchJournal
 from .serialize import serialize_result
 
 
-# Legacy pattern params → registry conventions
 _LEGACY_PARAM_ALIASES = {
     "metric_str": "diagonal",
     "mass_kg": "M",
 }
 
 
+@dataclass
+class ChainStep:
+    tool: str
+    params: dict[str, Any] = field(default_factory=dict)
+
+
 def _get_tools():
-    """Handler map from the central tool registry (names + aliases)."""
     from .tool_registry import get_handler_map
 
     return get_handler_map()
@@ -60,64 +60,145 @@ def _resolve_tool_name(name: str, tools: dict[str, Any]) -> str:
     return resolve_tool_name(name)
 
 
-class ResearchLoop:
-    """Executes a research cycle: hypothesis → experiment → analysis → conclusion.
+def _tool_needs_metric(tool_name: str) -> bool:
+    from .tool_registry import build_registry, resolve_tool_name
 
-    Uses LLM (when available) or heuristics to decompose questions
-    into executable experiments, then records everything in the journal.
+    try:
+        resolved = resolve_tool_name(tool_name)
+    except KeyError:
+        return False
+    spec = build_registry().get(resolved)
+    return bool(spec and spec.needs_metric)
+
+
+def _steps_from_hypothesis(h: dict) -> list[ChainStep]:
+    """Normalize hypothesis formats into an ordered chain of steps.
+
+    Accepted shapes:
+      - {"tool": "x", "params": {...}}                    # legacy single
+      - {"tools": [{"tool": "x", "params": {...}}, ...]}  # explicit chain
+      - {"tools": ["x", "y"]}                             # shorthand names
+      - mixed list of strings and dicts
     """
+    if h.get("tools"):
+        steps: list[ChainStep] = []
+        for item in h["tools"]:
+            if isinstance(item, str):
+                steps.append(ChainStep(tool=item, params={}))
+            elif isinstance(item, dict):
+                tool = item.get("tool") or item.get("name")
+                if not tool:
+                    raise ValueError(f"chain step missing tool: {item}")
+                steps.append(ChainStep(tool=str(tool), params=dict(item.get("params") or {})))
+            else:
+                raise ValueError(f"invalid chain step: {item!r}")
+        if not steps:
+            raise ValueError("hypothesis tools list is empty")
+        return steps
+
+    if h.get("tool"):
+        return [ChainStep(tool=str(h["tool"]), params=dict(h.get("params") or {}))]
+
+    raise ValueError("hypothesis needs 'tool' or 'tools'")
+
+
+def _inject_context(params: dict, context: dict, tool: str) -> dict:
+    """Fill metric_name from chain context when the step needs a metric."""
+    out = dict(params)
+    if not _tool_needs_metric(tool):
+        return out
+    has_metric = out.get("metric_name") or out.get("diagonal")
+    if not has_metric and context.get("metric_name"):
+        out["metric_name"] = context["metric_name"]
+    return out
+
+
+class ResearchLoop:
+    """Hypothesis → experiment (tool chain) → analysis → conclusion."""
 
     def __init__(self, journal: ResearchJournal | None = None,
                  llm_client: Any = None):
         self.journal = journal or ResearchJournal()
         self.tools = _get_tools()
-        # Auto-detect LLM from environment
+        # llm_client=False disables LLM; None auto-detects from env
         if llm_client is None and os.environ.get("LLM_API_KEY"):
-            llm_client = True  # signal to use env-configured LLM
+            llm_client = True
         self.llm = llm_client
 
     def run(self, question: str) -> dict[str, Any]:
-        """Run a complete research cycle on a question.
-
-        Args:
-            question: natural language research question
-
-        Returns:
-            Dict with hypothesis, experiments, results, and conclusion.
-        """
         hypotheses = self._hypothesize(question)
 
         results = []
         hyp_id = None
         for hyp in hypotheses:
-            experiment = self._design_experiment(hyp)
+            steps = _steps_from_hypothesis(hyp)
+            chain_label = " → ".join(s.tool for s in steps)
             hyp_id = self.journal.log_hypothesis(
                 question=question,
                 prediction=hyp["prediction"],
                 assumptions=hyp.get("assumptions", []),
             )
-
             exp_id = self.journal.log_experiment(
-                tool=experiment["tool"],
-                params=serialize_result(experiment["params"]),
+                tool=steps[0].tool if len(steps) == 1 else chain_label,
+                params=serialize_result(
+                    steps[0].params if len(steps) == 1
+                    else [{"tool": s.tool, "params": s.params} for s in steps]
+                ),
                 hypothesis_id=hyp_id,
             )
 
             start = time.time()
             try:
-                result = self._execute(experiment)
+                step_results = self._execute_chain(steps)
                 duration = (time.time() - start) * 1000
+                last = step_results[-1]["result"]
                 self.journal.log_observation(
-                    exp_id, serialize_result(result), duration_ms=duration, success=True
+                    exp_id,
+                    serialize_result({
+                        "steps": [
+                            {"tool": s["tool"], "result": serialize_result(s["result"])}
+                            for s in step_results
+                        ],
+                        "result": serialize_result(last),
+                    }),
+                    duration_ms=duration,
+                    success=True,
                 )
-                results.append({"hypothesis": hyp, "result": result, "success": True})
+                results.append({
+                    "hypothesis": hyp,
+                    "steps": step_results,
+                    "result": last,
+                    "success": True,
+                })
             except Exception as e:
                 duration = (time.time() - start) * 1000
+                # recover partial steps if present on the exception
+                partial = getattr(e, "partial_steps", None) or []
                 self.journal.log_observation(
-                    exp_id, str(e), duration_ms=duration, success=False
+                    exp_id,
+                    serialize_result({
+                        "error": str(e),
+                        "steps": [
+                            {"tool": s.get("tool"), "error": s.get("error")}
+                            if "error" in s else
+                            {"tool": s.get("tool"), "result": serialize_result(s.get("result"))}
+                            for s in partial
+                        ],
+                    }),
+                    duration_ms=duration,
+                    success=False,
                 )
-                self.journal.log_error(experiment["tool"], str(e))
-                results.append({"hypothesis": hyp, "error": str(e), "success": False})
+                failed_tool = (
+                    partial[-1].get("tool") if partial and "error" in partial[-1]
+                    else (partial[-1].get("tool") if partial else steps[0].tool)
+                )
+                self.journal.log_error(failed_tool or steps[0].tool, str(e))
+                results.append({
+                    "hypothesis": hyp,
+                    "steps": partial,
+                    "error": str(e),
+                    "success": False,
+                })
 
         conclusion = self._analyze(question, results)
         self.journal.log_conclusion(
@@ -137,10 +218,6 @@ class ResearchLoop:
     # ── Hypothesis decomposition ──
 
     def _hypothesize(self, question: str) -> list[dict]:
-        """Decompose a question into testable hypotheses.
-
-        Tries LLM first, falls back to pattern matching.
-        """
         if self.llm:
             try:
                 return self._hypothesize_llm(question)
@@ -149,15 +226,10 @@ class ResearchLoop:
         return self._hypothesize_patterns(question)
 
     def _hypothesize_llm(self, question: str) -> list[dict]:
-        """Use LLM to decompose a question into testable hypotheses.
-
-        Tool schemas come from the central registry.
-        """
         from .tool_registry import openai_tools_payload, registry_summary
 
         summary = registry_summary()
         tools_payload = openai_tools_payload()
-        # Keep the system prompt bounded: include names + a compact schema dump
         tools_desc = json.dumps({
             "tool_names": summary["names"],
             "n_tools": summary["count"],
@@ -170,31 +242,47 @@ class ResearchLoop:
                 },
                 "minkowski": {"diagonal": ["-1", "1", "1", "1"], "coords": ["t", "x", "y", "z"]},
             },
-            "metric_handoff": (
-                "Factories (create_*) store a MetricStore entry and return metric_name. "
-                "Consumers accept metric_name, or diagonal+coords to create on the fly."
+            "chain_execution": (
+                "The executor runs your tools SEQUENTIALLY. "
+                "If step 1 is a create_* factory, later metric consumers "
+                "automatically receive its metric_name — omit metric_name in later params. "
+                "For multi-step questions use the 'tools' array in execution order."
             ),
         }, indent=2)
 
         system_prompt = f"""You are a physics research assistant. Given a research question,
-decompose it into testable hypotheses, each with a tool call.
+decompose it into testable hypotheses.
 
 Available tools and schemas:
 {tools_desc}
 
 Return ONLY a JSON array of hypotheses. Each must have:
 - "prediction": string stating what the experiment should show
-- "tool": tool name from the available tools
-- "params": dict matching the tool's parameter schema
 - "assumptions": list of strings
+- EITHER "tool" + "params" for a single call
+- OR "tools": an ordered array of steps for multi-step work.
+  Each step is {{"tool": "...", "params": {{...}}}} or just a tool-name string.
+  After a create_* factory, leave metric_name empty on later steps.
 
-Example for "What is the Kretschmann scalar of Schwarzschild?":
+Example single-step:
 [
   {{
-    "prediction": "Kretschmann scalar K = 48M²/r⁶",
-    "tool": "compute_kretschmann",
-    "params": {{"diagonal": ["-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"], "coords": ["t", "r", "theta", "phi"], "params": {{"M": 1}}}},
-    "assumptions": ["Schwarzschild metric", "M > 0", "r > 2M"]
+    "prediction": "Universe age ≈ 13.8 Gyr",
+    "tool": "age_of_universe",
+    "params": {{"params": {{}}}},
+    "assumptions": ["ΛCDM"]
+  }}
+]
+
+Example multi-step chain:
+[
+  {{
+    "prediction": "Kerr is a vacuum solution so R=0",
+    "tools": [
+      {{"tool": "create_kerr", "params": {{"M": 1, "a": 0.5}}}},
+      {{"tool": "compute_scalar_curvature", "params": {{}}}}
+    ],
+    "assumptions": ["Kerr metric"]
   }}
 ]"""
 
@@ -214,12 +302,12 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
                     {"role": "user", "content": question},
                 ],
                 "temperature": 0.1,
-                "response_format": {"type": "json_object"},
+                "max_tokens": 2048,
             },
-            timeout=30,
+            timeout=60,
         )
         response.raise_for_status()
-        content = response.json()["choices"][0]["message"]["content"]
+        content = response.json()["choices"][0]["message"].get("content") or ""
 
         content = content.strip()
         if content.startswith("```"):
@@ -232,14 +320,21 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
 
         validated = []
         for h in hypotheses:
-            tool = h.get("tool")
-            if not tool or "params" not in h:
+            if "prediction" not in h:
                 continue
             try:
-                _resolve_tool_name(tool, self.tools)
-            except KeyError:
+                steps = _steps_from_hypothesis(h)
+            except ValueError:
                 continue
-            validated.append(h)
+            ok = True
+            for step in steps:
+                try:
+                    _resolve_tool_name(step.tool, self.tools)
+                except KeyError:
+                    ok = False
+                    break
+            if ok:
+                validated.append(h)
 
         if not validated:
             raise ValueError("LLM returned no valid hypotheses")
@@ -247,26 +342,28 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
         return validated
 
     def _hypothesize_patterns(self, question: str) -> list[dict]:
-        """Pattern-matching hypothesis decomposition (fallback)."""
         q = question.lower()
         hypotheses = []
 
-        schwarzschild_diag = [
-            "-(1 - 2*M/r)", "(1 - 2*M/r)^(-1)", "r^2", "r^2 * sin(theta)^2"
-        ]
-        schwarzschild_coords = ["t", "r", "theta", "phi"]
+        if "kretschmann" in q:
+            if "schwarzschild" in q:
+                hypotheses.append({
+                    "prediction": "Kretschmann scalar K = 48M²/r⁶",
+                    "tools": [
+                        {"tool": "create_schwarzschild", "params": {"M": 1}},
+                        {"tool": "compute_kretschmann", "params": {}},
+                    ],
+                    "assumptions": ["Schwarzschild metric"],
+                })
 
-        if "curvature" in q or "scalar" in q:
+        elif "curvature" in q or "scalar" in q:
             if "schwarzschild" in q:
                 hypotheses.append({
                     "prediction": "Schwarzschild scalar curvature R = 0 (vacuum solution)",
-                    "tool": "compute_scalar_curvature",
-                    "params": {
-                        "diagonal": schwarzschild_diag,
-                        "coords": schwarzschild_coords,
-                        "params": {"M": 1},
-                        "name": "schwarzschild",
-                    },
+                    "tools": [
+                        {"tool": "create_schwarzschild", "params": {"M": 1}},
+                        {"tool": "compute_scalar_curvature", "params": {}},
+                    ],
                     "assumptions": ["Schwarzschild metric", "vacuum Einstein equations"],
                 })
             elif "minkowski" in q or "flat" in q:
@@ -281,27 +378,24 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
                     "assumptions": ["Minkowski metric", "flat spacetime"],
                 })
 
-        elif "kretschmann" in q:
-            if "schwarzschild" in q:
+        elif "hawking" in q or "temperature" in q or "evapor" in q:
+            if ("evapor" in q) or ("entropy" in q and "temperature" in q):
+                solar_mass = 1.989e30
                 hypotheses.append({
-                    "prediction": "Kretschmann scalar K = 48M²/r⁶",
-                    "tool": "compute_kretschmann",
-                    "params": {
-                        "diagonal": schwarzschild_diag,
-                        "coords": schwarzschild_coords,
-                        "params": {"M": 1},
-                        "name": "schwarzschild",
-                    },
-                    "assumptions": ["Schwarzschild metric"],
+                    "prediction": "Hawking temperature and evaporation time for 1 M☉",
+                    "tools": [
+                        {"tool": "hawking_temperature", "params": {"M": solar_mass}},
+                        {"tool": "evaporation_time", "params": {"M": solar_mass}},
+                    ],
+                    "assumptions": ["1 solar mass black hole"],
                 })
-
-        elif "hawking" in q or "temperature" in q:
-            hypotheses.append({
-                "prediction": "Hawking temperature T_H = ℏc³/(8πGMk_B)",
-                "tool": "hawking_temperature",
-                "params": {"M": 1.989e30},
-                "assumptions": ["1 solar mass black hole"],
-            })
+            else:
+                hypotheses.append({
+                    "prediction": "Hawking temperature T_H = ℏc³/(8πGMk_B)",
+                    "tool": "hawking_temperature",
+                    "params": {"M": 1.989e30},
+                    "assumptions": ["1 solar mass black hole"],
+                })
 
         elif "geodesic" in q:
             hypotheses.append({
@@ -326,6 +420,16 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
                 "assumptions": ["ΛCDM", "Planck 2018 parameters"],
             })
 
+        elif "symmetry" in q or "killing" in q:
+            hypotheses.append({
+                "prediction": "Schwarzschild is static and stationary",
+                "tools": [
+                    {"tool": "create_schwarzschild", "params": {"M": 1}},
+                    {"tool": "classify_symmetry", "params": {}},
+                ],
+                "assumptions": ["Schwarzschild metric"],
+            })
+
         else:
             hypotheses.append({
                 "prediction": "Computing the requested quantity",
@@ -340,21 +444,45 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
 
         return hypotheses
 
-    def _design_experiment(self, hypothesis: dict) -> dict:
-        return {
-            "tool": hypothesis["tool"],
-            "params": hypothesis["params"],
-        }
+    def _execute_chain(self, steps: list[ChainStep]) -> list[dict]:
+        """Run steps sequentially, threading metric_name through context."""
+        context: dict[str, Any] = {}
+        out: list[dict] = []
 
-    def _execute(self, experiment: dict) -> Any:
-        tool_name = experiment["tool"]
-        params = _normalize_params(experiment["params"])
+        for i, step in enumerate(steps):
+            params = _normalize_params(step.params)
+            params = _inject_context(params, context, step.tool)
 
-        try:
-            resolved = _resolve_tool_name(tool_name, self.tools)
-        except KeyError as e:
-            raise ValueError(f"Unknown tool: {tool_name}") from e
+            if _tool_needs_metric(step.tool) and not (
+                params.get("metric_name") or params.get("diagonal")
+            ):
+                err = (
+                    f"step {i} ({step.tool}) needs a metric but none provided "
+                    f"and chain context has no metric_name"
+                )
+                rec = {"tool": step.tool, "params": params, "error": err}
+                out.append(rec)
+                exc = RuntimeError(err)
+                exc.partial_steps = out
+                raise exc
 
+            try:
+                result = self._call_tool(step.tool, params)
+            except Exception as e:
+                rec = {"tool": step.tool, "params": params, "error": str(e)}
+                out.append(rec)
+                exc = RuntimeError(f"step {i} ({step.tool}) failed: {e}")
+                exc.partial_steps = out
+                raise exc from e
+
+            out.append({"tool": step.tool, "params": params, "result": result})
+            if isinstance(result, dict) and result.get("metric_name"):
+                context["metric_name"] = result["metric_name"]
+
+        return out
+
+    def _call_tool(self, tool_name: str, params: dict) -> Any:
+        resolved = _resolve_tool_name(tool_name, self.tools)
         tool_fn = self.tools[resolved]
         start = time.time()
         try:
@@ -397,10 +525,6 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
         return result
 
     def _analyze(self, question: str, results: list[dict]) -> dict:
-        """Analyze results and form a conclusion.
-
-        For symbolic results, tries numerical evaluation to verify predictions.
-        """
         successful = [r for r in results if r.get("success")]
         failed = [r for r in results if not r.get("success")]
 
@@ -413,34 +537,43 @@ Example for "What is the Kretschmann scalar of Schwarzschild?":
         evidence = []
         verified = 0
         for r in successful:
-            result = r["result"]
             pred = r["hypothesis"]["prediction"]
+            # Prefer checking every step result that can be numerically evaluated
+            candidates = []
+            if r.get("steps"):
+                candidates = [s.get("result") for s in r["steps"] if "result" in s]
+            if not candidates and "result" in r:
+                candidates = [r["result"]]
 
-            if hasattr(result, "evaluate"):
-                test_points = [
-                    {"M": 1, "r": 6, "theta": 1.5708, "phi": 0, "t": 0},
-                    {"M": 1, "r": 10, "theta": 1.5708, "phi": 0, "t": 0},
-                ]
-                for pt in test_points:
-                    try:
-                        val = result.evaluate(pt)
-                        if abs(val) < 1e-8:
+            for result in candidates:
+                if hasattr(result, "evaluate"):
+                    test_points = [
+                        {"M": 1, "r": 6, "theta": 1.5708, "phi": 0, "t": 0},
+                        {"M": 1, "r": 10, "theta": 1.5708, "phi": 0, "t": 0},
+                    ]
+                    for pt in test_points:
+                        try:
+                            val = result.evaluate(pt)
+                            if abs(val) < 1e-8:
+                                evidence.append(
+                                    f"CONFIRMED: {pred} — numerically verified as 0 at {pt}"
+                                )
+                                verified += 1
+                                break
                             evidence.append(
-                                f"CONFIRMED: {pred} — numerically verified as 0 at {pt}"
+                                f"RESULT: {pred} — evaluates to {val} at {pt}"
                             )
-                            verified += 1
-                            break
-                        else:
-                            evidence.append(f"RESULT: {pred} — evaluates to {val} at {pt}")
-                    except Exception:
-                        pass
+                        except Exception:
+                            pass
+                    else:
+                        s = result.to_string()
+                        evidence.append(f"RESULT: {pred}: {s[:200]}")
+                elif isinstance(result, dict):
+                    evidence.append(f"RESULT: {pred}: {serialize_result(result)}")
                 else:
-                    s = result.to_string()
-                    evidence.append(f"RESULT: {pred}: {s[:200]}")
-            elif isinstance(result, dict):
-                evidence.append(f"RESULT: {pred}: {serialize_result(result)}")
-            else:
-                evidence.append(f"RESULT: {pred}: {str(serialize_result(result))[:200]}")
+                    evidence.append(
+                        f"RESULT: {pred}: {str(serialize_result(result))[:200]}"
+                    )
 
         verdict = (
             "Hypotheses verified"
