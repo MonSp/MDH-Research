@@ -3,7 +3,7 @@ feature: chain-executor
 status: delivered
 updated: 2026-09-15
 branch: feat/chain-executor
-commits: 8b6e44f..HEAD
+commits: 8b6e44f..49e56a1
 ---
 
 # ResearchLoop 顺序链执行器
