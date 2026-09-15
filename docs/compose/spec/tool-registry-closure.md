@@ -3,7 +3,7 @@ feature: tool-registry-closure
 status: delivered
 updated: 2026-09-15
 branch: feat/tool-registry-closure
-commits: 1aeeaad..HEAD
+commits: 1aeeaad..22c16dc
 ---
 
 # 工具面闭合：23 模块接入 ResearchLoop Tool Registry
