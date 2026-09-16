@@ -210,6 +210,7 @@ research/
 - **80+ agent tools**: `tool_registry.py` 统一注册，ResearchLoop / LLM schema / GeometrySession 共用
 - **顺序链执行**: LLM 可返回 `tools: [t1, t2, ...]`；工厂 `metric_name` 自动注入后续 consumer
 - **验证升级**: `_analyze` 数值点检 → SymPy `simplify` 恒零证明 → 真空场方程残差门禁（G_μν≈0）
+- **参数扫描**: hypothesis 可含 `sweep` 轴（values/start-stop）；单 tool 或链 inject；汇总方向/log-log 斜率/Spearman
 
 ## Agent 工具面
 
@@ -220,6 +221,7 @@ research/
 - **GeometrySession.define_metric** 同步注册到 MetricStore
 - **顺序链**：hypothesis 可含 `tools` 数组；执行器串行调用并把上一步 `metric_name` 注入下一步
 - **验证**（`verification.py`）：`sympy_is_zero` 用 SymPy 证明表达式恒为 0（C++ `is_zero` 对完整 GR 失败）；`vacuum_residual_check` 在远场点检查 Einstein 张量残差；结论含 `verification` 摘要
+- **参数扫描**（`param_sweep.py`）：`sweep.axis` + `extract`（dict key）；链式 `inject` 把轴值写入指定 step；`summarize_trend` 输出 increasing/decreasing/non-monotonic + log-log slope
 
 ```python
 from orchestrator.research_loop import ResearchLoop

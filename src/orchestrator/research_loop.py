@@ -131,13 +131,18 @@ class ResearchLoop:
         results = []
         hyp_id = None
         for hyp in hypotheses:
-            steps = _steps_from_hypothesis(hyp)
-            chain_label = " → ".join(s.tool for s in steps)
             hyp_id = self.journal.log_hypothesis(
                 question=question,
                 prediction=hyp["prediction"],
                 assumptions=hyp.get("assumptions", []),
             )
+
+            if hyp.get("sweep"):
+                results.append(self._run_sweep_hypothesis(hyp, hyp_id))
+                continue
+
+            steps = _steps_from_hypothesis(hyp)
+            chain_label = " → ".join(s.tool for s in steps)
             exp_id = self.journal.log_experiment(
                 tool=steps[0].tool if len(steps) == 1 else chain_label,
                 params=serialize_result(
@@ -256,6 +261,13 @@ class ResearchLoop:
                 "automatically receive its metric_name — omit metric_name in later params. "
                 "For multi-step questions use the 'tools' array in execution order."
             ),
+            "parameter_sweep": (
+                "For 'how does Y change with X' questions add a 'sweep' object: "
+                '{"tool": "...", "params": {...}, "axis": {"name": "X", "values": [...]}, '
+                '"extract": "dict_key_or_null"} '
+                "or for chains: axis + inject {\"tool\": \"...\", \"param\": \"X\"}. "
+                "Max 12 axis points."
+            ),
         }, indent=2)
 
         system_prompt = f"""You are a physics research assistant. Given a research question,
@@ -271,6 +283,9 @@ Return ONLY a JSON array of hypotheses. Each must have:
 - OR "tools": an ordered array of steps for multi-step work.
   Each step is {{"tool": "...", "params": {{...}}}} or just a tool-name string.
   After a create_* factory, leave metric_name empty on later steps.
+- OPTIONAL "sweep" to vary one parameter and measure a trend:
+  {{"tool": "...", "params": {{}}, "axis": {{"name": "M", "values": [1e30, 1e31, 1e32]}}, "extract": "T_K"}}
+  Chain form: same axis plus "inject": {{"tool": "create_...", "param": "M"}}.
 
 Example single-step:
 [
@@ -329,6 +344,26 @@ Example multi-step chain:
         validated = []
         for h in hypotheses:
             if "prediction" not in h:
+                continue
+            # sweep-only hypotheses are valid (tool lives under sweep.tool / tools)
+            if h.get("sweep"):
+                sw = h["sweep"] or {}
+                names: list[str] = []
+                if sw.get("tool"):
+                    names.append(str(sw["tool"]))
+                for step in (h.get("tools") or []):
+                    names.append(step if isinstance(step, str) else str((step or {}).get("tool") or ""))
+                if not names:
+                    continue
+                ok = True
+                for n in names:
+                    try:
+                        _resolve_tool_name(n, self.tools)
+                    except KeyError:
+                        ok = False
+                        break
+                if ok:
+                    validated.append(h)
                 continue
             try:
                 steps = _steps_from_hypothesis(h)
@@ -397,6 +432,20 @@ Example multi-step chain:
                     ],
                     "assumptions": ["1 solar mass black hole"],
                 })
+            elif ("scan" in q) or ("sweep" in q) or ("vary" in q) or ("vs" in q and "mass" in q) or ("as a function of" in q and "mass" in q):
+                hypotheses.append({
+                    "prediction": "Hawking temperature decreases as mass increases (∝ 1/M)",
+                    "sweep": {
+                        "tool": "hawking_temperature",
+                        "params": {},
+                        "axis": {
+                            "name": "M",
+                            "values": [1e30, 1e31, 1e32],
+                        },
+                        "extract": "T_K",
+                    },
+                    "assumptions": ["Schwarzschild black holes"],
+                })
             else:
                 hypotheses.append({
                     "prediction": "Hawking temperature T_H = ℏc³/(8πGMk_B)",
@@ -451,6 +500,192 @@ Example multi-step chain:
             })
 
         return hypotheses
+
+    def _run_sweep_hypothesis(self, hyp: dict, hyp_id: str) -> dict:
+        """Execute a parameter-sweep hypothesis and summarize the trend."""
+        from .param_sweep import (
+            MAX_SWEEP_POINTS,
+            expand_axis,
+            extract_numeric,
+            format_trend_sentence,
+            summarize_trend,
+            substitute_params,
+        )
+
+        sweep = hyp["sweep"] or {}
+        axis = sweep.get("axis") or {}
+        axis_name = str(axis.get("name") or "x")
+        extract_key = sweep.get("extract")
+        inject = sweep.get("inject")  # chain mode: {"tool","param"}
+
+        try:
+            xs = expand_axis(axis)
+        except Exception as e:
+            self.journal.log_error("sweep", f"bad axis: {e}")
+            return {
+                "hypothesis": hyp,
+                "steps": [],
+                "error": f"bad sweep axis: {e}",
+                "success": False,
+            }
+
+        requested_n = None
+        if axis.get("values"):
+            requested_n = len(axis["values"])
+        elif axis.get("n") is not None:
+            requested_n = int(axis["n"])
+        truncated = bool(requested_n and requested_n > MAX_SWEEP_POINTS)
+
+        if not sweep.get("tool") and not hyp.get("tools") and not hyp.get("tool"):
+            err = "sweep hypothesis needs sweep.tool or tools"
+            self.journal.log_error("sweep", err)
+            return {
+                "hypothesis": hyp,
+                "steps": [],
+                "error": err,
+                "success": False,
+            }
+
+        # single-tool sweep
+        if sweep.get("tool") and not hyp.get("tools"):
+            tool = str(sweep["tool"])
+            base_params = dict(sweep.get("params") or {})
+            exp_label = f"sweep:{tool}"
+            exp_id = self.journal.log_experiment(
+                tool=exp_label,
+                params=serialize_result({
+                    "axis": axis_name,
+                    "values": xs,
+                    "extract": extract_key,
+                }),
+                hypothesis_id=hyp_id,
+            )
+            # bind metric params into Expression eval point when present
+            eval_point = dict(base_params)
+            points = []
+            start = time.time()
+            for x in xs:
+                params = substitute_params(base_params, axis_name, x)
+                eval_pt = {**eval_point, axis_name: x}
+                try:
+                    raw = self._call_tool(tool, params)
+                    y = extract_numeric(raw, extract_key, eval_point=eval_pt)
+                    if y is None:
+                        points.append({"x": x, "error": f"no numeric extract key={extract_key}"})
+                    else:
+                        points.append({"x": x, "y": y})
+                except Exception as e:
+                    points.append({"x": x, "error": str(e)})
+            duration = (time.time() - start) * 1000
+        else:
+            # chain sweep with inject
+            steps = _steps_from_hypothesis(hyp)
+            if not inject:
+                inject = {"tool": steps[0].tool, "param": axis_name}
+            inj_tool = str(inject.get("tool") or steps[0].tool)
+            inj_param = str(inject.get("param") or axis_name)
+
+            def _same_tool(a: str, b: str) -> bool:
+                if a == b:
+                    return True
+                try:
+                    return _resolve_tool_name(a, self.tools) == _resolve_tool_name(b, self.tools)
+                except KeyError:
+                    return a.split(":")[-1] == b.split(":")[-1]
+
+            exp_label = f"sweep:{' → '.join(s.tool for s in steps)}"
+            exp_id = self.journal.log_experiment(
+                tool=exp_label,
+                params=serialize_result({
+                    "axis": axis_name,
+                    "values": xs,
+                    "inject": inject,
+                    "extract": extract_key,
+                }),
+                hypothesis_id=hyp_id,
+            )
+            points = []
+            start = time.time()
+            for x in xs:
+                new_steps = []
+                for s in steps:
+                    params = dict(s.params)
+                    if _same_tool(s.tool, inj_tool):
+                        params = substitute_params(params, inj_param, x)
+                    new_steps.append(ChainStep(tool=s.tool, params=params))
+                try:
+                    step_results = self._execute_chain(new_steps)
+                    last = step_results[-1]["result"]
+                    # bind metric params for Expression evaluation
+                    eval_pt: dict[str, float] = {}
+                    for s in step_results:
+                        eval_pt.update({
+                            k: float(v) for k, v in (s.get("params") or {}).items()
+                            if isinstance(v, (int, float)) and not isinstance(v, bool)
+                        })
+                        res = s.get("result")
+                        if isinstance(res, dict) and isinstance(res.get("params"), dict):
+                            eval_pt.update({
+                                k: float(v) for k, v in res["params"].items()
+                                if isinstance(v, (int, float)) and not isinstance(v, bool)
+                            })
+                    y = extract_numeric(last, extract_key, eval_point=eval_pt or None)
+                    if y is None:
+                        points.append({"x": x, "error": f"no numeric extract key={extract_key}"})
+                    else:
+                        points.append({"x": x, "y": y})
+                except Exception as e:
+                    points.append({"x": x, "error": str(e)})
+            duration = (time.time() - start) * 1000
+
+        ok_ys = [(p["x"], p["y"]) for p in points if "y" in p]
+        if len(ok_ys) < 2:
+            self.journal.log_observation(
+                exp_id,
+                serialize_result({"sweep": {"points": points}, "error": "insufficient finite samples"}),
+                duration_ms=duration,
+                success=False,
+            )
+            return {
+                "hypothesis": hyp,
+                "steps": [],
+                "sweep": {"axis_name": axis_name, "points": points,
+                          "trend": summarize_trend([], [])},
+                "error": "sweep produced <2 finite samples",
+                "success": False,
+            }
+
+        xs_ok = [p[0] for p in ok_ys]
+        ys_ok = [p[1] for p in ok_ys]
+        trend = summarize_trend(xs_ok, ys_ok, truncated=truncated)
+        sentence = format_trend_sentence(axis_name, extract_key, trend)
+        self.journal.log_observation(
+            exp_id,
+            serialize_result({
+                "sweep": {
+                    "axis_name": axis_name,
+                    "extract": extract_key,
+                    "points": points,
+                    "trend": trend,
+                },
+                "summary": sentence,
+            }),
+            duration_ms=duration,
+            success=True,
+        )
+        return {
+            "hypothesis": hyp,
+            "steps": [{"tool": sweep.get("tool") or "chain", "params": {}, "result": trend}],
+            "sweep": {
+                "axis_name": axis_name,
+                "extract": extract_key,
+                "points": points,
+                "trend": trend,
+                "summary": sentence,
+            },
+            "result": trend,
+            "success": True,
+        }
 
     def _execute_chain(self, steps: list[ChainStep]) -> list[dict]:
         """Run steps sequentially, threading metric_name through context."""
@@ -569,6 +804,14 @@ Example multi-step chain:
             pred = r["hypothesis"]["prediction"]
             tools = [s.get("tool") for s in (r.get("steps") or [])]
             metric_name = r.get("metric_name")
+
+            # parameter-sweep evidence
+            sw = r.get("sweep")
+            if sw and sw.get("trend") and sw["trend"].get("n", 0) >= 2:
+                evidence.append(sw.get("summary") or str(sw["trend"]))
+                # a completed multi-point sweep is experimental evidence
+                any_confirmed = True
+
             extra_params: dict[str, float] = {}
             if metric_name:
                 try:
