@@ -3,7 +3,7 @@ feature: param-sweep
 status: delivered
 updated: 2026-09-16
 branch: feat/param-sweep
-commits: feefb29..HEAD
+commits: feefb29..dac0f5c
 ---
 
 # 参数扫描实验：LLM 多组参数假设搜索 + 趋势汇总
