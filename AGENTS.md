@@ -97,6 +97,7 @@ research/
 - **失败重规划**：`replan.diagnose_failure` + `heuristic_repair`；缺 metric 前置 factory / 注入 diagonal；缺参填默认；同义词与坏 kwargs 修复；journal note 记 `REPLAN(...)`；不可修则保持失败
 - **智能体数学基础**：`agent_math.py` 研究轨迹 Shannon 熵 / decision pressure / MetricStore 状态 L2 距离 / sweep 信息量；`conclusion.foundations` 附带 run 级过程指标
 - **假设排序**：`score_hypothesis` / `rank_hypotheses`；`conclusion.hypothesis_ranking` + `best_hypothesis`；journal conclusion 带 foundations/ranking extra
+- **假设竞争（L6）**：首轮无成功结果时 `compete.should_compete` → heuristic/LLM 备选 → 再执行（含 replan）→ 重排；`conclusion.competed` + journal `COMPETE:` note
 
 ## 与大荒界生态的关系
 

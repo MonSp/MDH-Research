@@ -133,6 +133,7 @@ Grounded in code and evals, not vision slides:
 | **L4b Parameter sweep** | Axis expansion + trend summary | ✅ |
 | **L4c Failure replanning** | Diagnose + heuristic repair (missing metric/param, synonyms, bad kwargs) then retry | ✅ |
 | **L5 Agent foundations** | Trajectory entropy, state distance, sweep info + **hypothesis ranking** (journaled) | ✅ |
+| **L6 Hypothesis competition** | When the first round fails, regenerate alternatives (heuristic/LLM) and re-rank | ✅ |
 
 ### Compute / reason / verify
 

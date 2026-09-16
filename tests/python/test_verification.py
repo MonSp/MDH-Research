@@ -262,7 +262,11 @@ class TestAnalyzePipeline:
         # gate may run (vacuum factory) but must NOT alone flip to verified
         assert c["verdict"] != "Hypotheses verified"
 
-    def test_all_failed_includes_verification(self):
+    def test_all_failed_includes_verification(self, monkeypatch):
+        import orchestrator.compete as compete_mod
+
+        # disable L6 competition so this stays a pure all-failed path
+        monkeypatch.setattr(compete_mod, "should_compete", lambda *a, **k: False)
         loop = _loop()
         hyp = [{
             "prediction": "fail",
