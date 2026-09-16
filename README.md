@@ -132,7 +132,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L3 多步编排** | LLM `tools[]` 顺序链；`metric_name` 自动注入 | ✅ |
 | **L4 验证** | SymPy 恒零 + 绑定 numeric + 真空残差门禁 | ✅ |
 | **L4b 参数扫描** | `sweep` 轴 + 趋势汇总 | ✅ |
-| **L4c 失败重规划** | 失败后自动换 tool | ❌ |
+| **L4c 失败重规划** | 诊断 + 启发式修复（缺 metric / 缺参 / 同义词 / 坏 kwargs）后重跑 | ✅ |
 | **L5 智能体数学基础** | agent 状态空间的数学模型 | ❌ |
 
 ### 计算 / 推理 / 验证

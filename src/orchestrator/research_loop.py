@@ -185,8 +185,52 @@ class ResearchLoop:
                 })
             except Exception as e:
                 duration = (time.time() - start) * 1000
-                # recover partial steps if present on the exception
                 partial = getattr(e, "partial_steps", None) or []
+
+                # ── L4c failure replan ──
+                repaired, replan_note = self._try_replan(
+                    steps, str(e), partial, question
+                )
+                if repaired is not None:
+                    try:
+                        step_results = self._execute_chain(repaired)
+                        duration = (time.time() - start) * 1000
+                        last = step_results[-1]["result"]
+                        metric_name = None
+                        for s in step_results:
+                            res = s.get("result")
+                            if isinstance(res, dict) and res.get("metric_name"):
+                                metric_name = res["metric_name"]
+                            elif s.get("params", {}).get("metric_name"):
+                                metric_name = s["params"]["metric_name"]
+                        self.journal.log_observation(
+                            exp_id,
+                            serialize_result({
+                                "replan": replan_note,
+                                "steps": [
+                                    {"tool": s["tool"],
+                                     "result": serialize_result(s["result"])}
+                                    for s in step_results
+                                ],
+                                "result": serialize_result(last),
+                            }),
+                            duration_ms=duration,
+                            success=True,
+                        )
+                        results.append({
+                            "hypothesis": hyp,
+                            "steps": step_results,
+                            "result": last,
+                            "metric_name": metric_name,
+                            "replan": replan_note,
+                            "success": True,
+                        })
+                        continue
+                    except Exception as e2:
+                        e = e2
+                        partial = getattr(e2, "partial_steps", None) or partial
+                        duration = (time.time() - start) * 1000
+
                 self.journal.log_observation(
                     exp_id,
                     serialize_result({
@@ -229,6 +273,41 @@ class ResearchLoop:
         }
 
     # ── Hypothesis decomposition ──
+
+    def _try_replan(
+        self,
+        steps: list[ChainStep],
+        error: str,
+        partial: list[dict],
+        question: str,
+    ) -> tuple[list[ChainStep] | None, str | None]:
+        """Attempt heuristic repair of a failed chain. Returns (new_steps, note)."""
+        from .replan import describe_repair, diagnose_failure, heuristic_repair
+
+        diagnosis = diagnose_failure(error, partial)
+        repaired = heuristic_repair(
+            steps, diagnosis, question=question, step_cls=ChainStep
+        )
+        if repaired is None:
+            return None, None
+        # avoid no-op repair
+        same = (
+            len(repaired) == len(steps)
+            and all(
+                a.tool == b.tool and a.params == b.params
+                for a, b in zip(repaired, steps)
+            )
+        )
+        if same:
+            return None, None
+        note = describe_repair(steps, repaired, str(diagnosis.get("kind")))
+        try:
+            self.journal.log_note(
+                f"{note} | diagnosis={diagnosis.get('kind')} | {error[:120]}"
+            )
+        except Exception:
+            pass
+        return repaired, note
 
     def _hypothesize(self, question: str) -> list[dict]:
         if self.llm:

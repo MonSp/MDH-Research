@@ -193,10 +193,10 @@ class TestChainExecution:
 
     def test_run_level_error_journal(self):
         loop = _loop()
-        # force a chain that needs a metric without providing one
+        # unrepaired failure: unknown tool with no synonym
         monkey_hyp = [{
             "prediction": "should fail",
-            "tools": ["compute_scalar_curvature"],
+            "tools": ["not_a_real_tool_xyz"],
             "assumptions": [],
         }]
         loop._hypothesize_patterns = lambda q: monkey_hyp  # type: ignore
@@ -205,6 +205,20 @@ class TestChainExecution:
         events = loop.journal.get_events()
         types = [e["type"] for e in events]
         assert "error" in types
+
+    def test_missing_metric_chain_is_replanned(self):
+        """L4c: missing metric is repaired by prepending a factory."""
+        loop = _loop()
+        monkey_hyp = [{
+            "prediction": "Ricci vanishes",
+            "tools": ["compute_ricci"],
+            "assumptions": [],
+        }]
+        loop._hypothesize_patterns = lambda q: monkey_hyp  # type: ignore
+        result = loop.run("schwarzschild vacuum")
+        r0 = result["results"][0]
+        assert r0["success"] is True, r0.get("error")
+        assert r0["steps"][0]["tool"] == "create_schwarzschild"
 
     def test_journal_has_tool_calls_per_step(self):
         loop = _loop()
