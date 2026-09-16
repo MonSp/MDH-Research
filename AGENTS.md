@@ -92,6 +92,7 @@ research/
 - Metric 交接：工厂 put 进 `MetricStore`，消费者用 `metric_name`；禁止把活体 C++ Metric 塞进 JSON 返回值
 - ResearchLoop / GeometrySession / LLM schema 均从 registry 取工具，不要在 research_loop 里再写死 tool 表
 - **顺序链**：hypothesis 支持 `tools: [t1, t2, ...]`；`_execute_chain` 串行执行，`create_*` 的 `metric_name` 自动注入后续 `needs_metric` 步骤；缺 metric 时显式失败
+- **验证升级**：`verification.sympy_is_zero` / `vacuum_residual_check`；`_analyze` 流水线 = 数值点检 → SymPy 恒零 → 真空残差门禁；结论带 `verification` 字段。Kerr 为对角近似，残差门禁 tol=1e-4、远场采样
 
 ## 与大荒界生态的关系
 
