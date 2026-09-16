@@ -3,7 +3,7 @@ feature: failure-replan
 status: delivered
 updated: 2026-09-16
 branch: feat/failure-replan
-commits: 6d63fda..HEAD
+commits: 6d63fda..4b83cbf
 ---
 
 # L4c 失败重规划（Failure Replan）
