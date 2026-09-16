@@ -198,3 +198,54 @@ def summarize_run(results: list[dict], n_registry_tools: int | None = None) -> d
         ) / len(sweep_infos)
 
     return base
+
+
+def score_hypothesis(result: dict[str, Any]) -> dict[str, Any]:
+    """Score one hypothesis result for multi-hypothesis ranking.
+
+    Higher is better. Components:
+      - success: 2.0
+      - evaluation-ready step (has .evaluate): +1.0 each, capped
+      - sweep certainty: + trend_certainty
+      - replan: -0.5 (efficiency penalty)
+      - failure: 0 base
+    """
+    score = 0.0
+    if result.get("success"):
+        score += 2.0
+
+    eval_steps = 0
+    for s in result.get("steps") or []:
+        res = s.get("result")
+        if hasattr(res, "evaluate"):
+            eval_steps += 1
+    score += min(eval_steps, 3) * 1.0
+
+    sw = result.get("sweep")
+    if sw and sw.get("trend"):
+        info = sweep_information(sw["trend"])
+        score += float(info.get("trend_certainty") or 0.0)
+
+    if result.get("replan"):
+        score -= 0.5
+
+    pred = (result.get("hypothesis") or {}).get("prediction", "")
+    return {
+        "score": score,
+        "success": bool(result.get("success")),
+        "n_eval_steps": eval_steps,
+        "has_sweep": bool(sw),
+        "replan": bool(result.get("replan")),
+        "prediction": pred[:120],
+    }
+
+
+def rank_hypotheses(results: list[dict]) -> list[dict]:
+    """Score and sort hypotheses best-first. Empty input → []."""
+    scored = []
+    for i, r in enumerate(results or []):
+        entry = score_hypothesis(r)
+        entry["index"] = i
+        scored.append(entry)
+    scored.sort(key=lambda e: (-e["score"], e["index"]))
+    return scored

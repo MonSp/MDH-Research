@@ -194,8 +194,8 @@
   "agent_foundations": {
     "gameAbility": "参悟",
     "category": "Research",
-    "description": "智能体数学基础 = 参悟，研究轨迹熵 / 状态距离 / 扫描信息量",
-    "tools": ["trajectory_metrics", "shannon_entropy_bits", "state_distance", "sweep_information"],
+    "description": "智能体数学基础 = 参悟，研究轨迹熵 / 状态距离 / 扫描信息量 / 假设排序",
+    "tools": ["trajectory_metrics", "shannon_entropy_bits", "state_distance", "sweep_information", "rank_hypotheses"],
     "module": "src/orchestrator/agent_math.py"
   }
 }

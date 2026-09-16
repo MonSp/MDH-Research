@@ -778,6 +778,18 @@ def _specs() -> list[ToolSpec]:
         }, ["trend"]),
         returns="dict", handler="agent_math:sweep_information",
     ))
+    add(ToolSpec(
+        name="rank_hypotheses", category="agent_foundations", game_ability="参悟",
+        description="Score and rank hypothesis results best-first",
+        params_schema=_obj({
+            "results": {
+                "type": "array",
+                "description": "List of ResearchLoop result dicts",
+                "items": {"type": "object"},
+            },
+        }, ["results"]),
+        returns="list", handler="agent_math:rank_hypotheses",
+    ))
 
     return S
 
