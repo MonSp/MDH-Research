@@ -141,17 +141,21 @@ class ResearchJournal:
         return event.id
 
     def log_conclusion(self, hypothesis_id: str, verdict: str,
-                       evidence: list[str] | None = None) -> str:
-        """Record conclusion about a hypothesis."""
+                       evidence: list[str] | None = None,
+                       extra: dict | None = None) -> str:
+        """Record conclusion about a hypothesis. `extra` holds optional L5 payload."""
+        payload = {
+            "verdict": verdict,
+            "evidence": evidence or [],
+        }
+        if extra:
+            payload.update(extra)
         event = JournalEvent(
             id=uuid.uuid4().hex[:8],
             timestamp=time.time(),
             type=EventType.CONCLUSION,
             parent_id=hypothesis_id,
-            payload={
-                "verdict": verdict,
-                "evidence": evidence or [],
-            },
+            payload=payload,
         )
         self._emit(event)
         return event.id

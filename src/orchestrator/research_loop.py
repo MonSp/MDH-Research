@@ -262,6 +262,15 @@ class ResearchLoop:
             hypothesis_id=hyp_id,
             verdict=conclusion["verdict"],
             evidence=conclusion.get("evidence", []),
+            extra={
+                "foundations": serialize_result(conclusion.get("foundations") or {}),
+                "hypothesis_ranking": serialize_result(
+                    conclusion.get("hypothesis_ranking") or []
+                ),
+                "best_hypothesis": serialize_result(
+                    conclusion.get("best_hypothesis") or {}
+                ),
+            },
         )
 
         return {
@@ -994,15 +1003,25 @@ Example multi-step chain:
         else:
             verdict = "Experiments completed (symbolic simplification pending)"
 
-        # L5: process metrics over the whole run (not world physics)
+        # L5: process metrics + multi-hypothesis ranking (not world physics)
         try:
-            from .agent_math import summarize_run
+            from .agent_math import rank_hypotheses, summarize_run
             from .tool_registry import registry_summary
 
             n_tools = registry_summary().get("count")
             foundations = summarize_run(results, n_registry_tools=n_tools)
+            ranking = rank_hypotheses(results)
         except Exception:
             foundations = {}
+            ranking = []
+
+        best = ranking[0] if ranking else None
+        if ranking and len(ranking) > 1:
+            top = ranking[0]
+            evidence.append(
+                f"RANK: best hypothesis #{top['index']} score={top['score']:.2f} "
+                f"— {top.get('prediction', '')[:80]}"
+            )
 
         return {
             "verdict": verdict,
@@ -1016,4 +1035,6 @@ Example multi-step chain:
                 "residual_gates": residual_gates,
             },
             "foundations": foundations,
+            "hypothesis_ranking": ranking,
+            "best_hypothesis": best,
         }

@@ -95,7 +95,8 @@ research/
 - **验证升级**：`verification.sympy_is_zero` / `vacuum_residual_check`；`_analyze` 流水线 = 数值点检 → SymPy 恒零 → 真空残差门禁；结论带 `verification` 字段。Kerr 为对角近似，残差门禁 tol=1e-4、远场采样
 - **参数扫描**：hypothesis 可带 `sweep`（axis values 或 start/stop/n/log；extract dict key；链式 inject）。单点失败不中断；有限样本 < 2 则失败；MAX 12 点；Expression 在参考点 evaluate
 - **失败重规划**：`replan.diagnose_failure` + `heuristic_repair`；缺 metric 前置 factory / 注入 diagonal；缺参填默认；同义词与坏 kwargs 修复；journal note 记 `REPLAN(...)`；不可修则保持失败
-- **智能体数学基础（MVP）**：`agent_math.py` 研究轨迹 Shannon 熵 / decision pressure / MetricStore 状态 L2 距离 / sweep 信息量；`conclusion.foundations` 附带 run 级过程指标
+- **智能体数学基础**：`agent_math.py` 研究轨迹 Shannon 熵 / decision pressure / MetricStore 状态 L2 距离 / sweep 信息量；`conclusion.foundations` 附带 run 级过程指标
+- **假设排序**：`score_hypothesis` / `rank_hypotheses`；`conclusion.hypothesis_ranking` + `best_hypothesis`；journal conclusion 带 foundations/ranking extra
 
 ## 与大荒界生态的关系
 
