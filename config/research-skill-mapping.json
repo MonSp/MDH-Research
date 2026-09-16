@@ -190,5 +190,12 @@
     "description": "ADM/BSSN = 推演，3+1 分解与共形变量",
     "tools": ["extract_adm_static", "hamiltonian_constraint_static", "bssn_variables"],
     "module": "src/orchestrator/adm.py"
+  },
+  "agent_foundations": {
+    "gameAbility": "参悟",
+    "category": "Research",
+    "description": "智能体数学基础 = 参悟，研究轨迹熵 / 状态距离 / 扫描信息量",
+    "tools": ["trajectory_metrics", "shannon_entropy_bits", "state_distance", "sweep_information"],
+    "module": "src/orchestrator/agent_math.py"
   }
 }
