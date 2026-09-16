@@ -1,6 +1,6 @@
 # 大荒界-科研 (MDH-Research)
 
-[![Tests](https://img.shields.io/badge/tests-347%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-377%20passed-brightgreen)]()
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)]()
 [![Python](https://img.shields.io/badge/Python-3.11+-yellow)]()
 
@@ -21,6 +21,49 @@
 | **理论框架** | Tetrads、Newman-Penrose、Killing 矢量、线性化引力 | ✅ |
 | **暗能量** | 状态方程、f(R) 修正引力、ΛCDM 参数 | ✅ |
 
+## 智能体能力分层（结论）
+
+以代码与评测为准，而非愿景标签：
+
+| 层 | 内容 | 状态 |
+|----|------|------|
+| **L0 计算库** | C++ 符号核心 + 23 个 Python 物理模块，377 tests | ✅ |
+| **L1 Agent 工具面** | 80 tools 统一 registry；MetricStore 命名交接 | ✅ |
+| **L2 实验台账** | ResearchJournal：hypothesis → experiment → tool_call → observation → conclusion | ✅ |
+| **L3 多步编排** | LLM 返回 `tools[]` 顺序链；工厂 `metric_name` 自动注入 | ✅ |
+| **L4 验证** | SymPy 恒零 + 绑定后 numeric + 真空场方程残差门禁 | ✅ |
+| **L4b 参数扫描** | `sweep` 轴展开 + 趋势汇总（方向 / Spearman / log-log 斜率） | ✅ |
+| **L4c 失败重规划** | 某步失败后自动换 tool 重试 | ❌ |
+| **L5 智能体数学基础** | agent 自身状态空间的数学模型 | ❌ |
+
+### 计算 / 推理 / 验证 三层判定
+
+| 能力 | 水平 | 说明 |
+|------|------|------|
+| **计算** | **成熟** | agent 可调用 80 物理 tool；Metric 可命名交接；链式 create → consumer |
+| **推理（编排）** | **多步 + 参数扫描** | LLM 选 tool 准确率（链式感知）~99%；顺序执行；扫轴出趋势 |
+| **推理（理论）** | **辅助，非替代** | 能把「分析 Kerr 真空」「扫 M 看 T_H」编排成可执行实验；不能开放假设搜索 / 文献 grounding |
+| **验证** | **符号 + 残差 + 趋势** | SymPy 证 R≡0；G_μν 远场残差门禁；拒绝未绑定符号 / NaN 假通过；log-log 斜率核对物理预期 |
+
+**一句话定位**：可被 agent 调用、可多步编排、可参数扫描、结果可符号/残差核验的**物理计算实验平台**——「辅助理论计算」已闭环；「自主发现」仍是下一层。
+
+### 端到端示例（main 实测）
+
+```text
+# 验证
+Q: What is the scalar curvature of Schwarzschild spacetime?
+   → create_schwarzschild → compute_scalar_curvature
+   → CONFIRMED (SymPy simplify → 0)
+   → GATE PASS max|G_μν| ≈ 2.5e-16
+   → verdict: Hypotheses verified
+
+# 参数扫描趋势
+Q: How does Hawking temperature vary as a function of mass?
+   → sweep M ∈ {1e30, 1e31, 1e32}, extract T_K
+   → SWEEP: T_K vs M → decreasing
+   → log-log slope ≈ -1.0   # T ∝ 1/M
+```
+
 ## 快速开始
 
 ```bash
@@ -34,7 +77,7 @@ ctest --test-dir build                    # 59 C++ tests
 
 # Python 测试
 pip install sympy scipy matplotlib numpy pytest
-python3 -m pytest tests/python/ -v       # 245+ Python tests
+python3 -m pytest tests/python/ -v       # 318+ Python tests
 ```
 
 ## Python API 示例
@@ -229,11 +272,64 @@ loop = ResearchLoop()
 # pattern 路径自动走链：create_schwarzschild → compute_scalar_curvature
 loop.run("What is the scalar curvature of Schwarzschild spacetime?")
 
+# 参数扫描：一次编排多组参数并汇总趋势
+result = loop.run("How does Hawking temperature vary as a function of mass? Scan several masses.")
+print(result["results"][0]["sweep"]["trend"])
+# {'direction': 'decreasing', 'log_log_slope': -1.0, 'n': 3, ...}
+
 from orchestrator.tool_registry import execute_tool, registry_summary
 print(registry_summary()["count"])  # 80
 execute_tool("create_schwarzschild", {"M": 1})
 execute_tool("compute_scalar_curvature", {"metric_name": "schwarzschild"})
 ```
+
+### 参数扫描趋势汇总
+
+hypothesis 可带 `sweep` 对象，由 LLM 一次编排多组参数：
+
+```json
+{
+  "prediction": "Hawking temperature decreases as 1/M",
+  "sweep": {
+    "tool": "hawking_temperature",
+    "axis": {"name": "M", "values": [1e30, 1e31, 1e32]},
+    "extract": "T_K"
+  }
+}
+```
+
+链式扫描（把轴值注入工厂，Expression 在参考点求值）：
+
+```json
+{
+  "tools": [
+    {"tool": "create_schwarzschild", "params": {"M": 1}},
+    {"tool": "compute_kretschmann", "params": {}}
+  ],
+  "sweep": {
+    "axis": {"name": "M", "values": [1, 2, 3]},
+    "inject": {"tool": "create_schwarzschild", "param": "M"},
+    "extract": null
+  }
+}
+```
+
+| 趋势字段 | 含义 |
+|----------|------|
+| `direction` | `increasing` / `decreasing` / `non-monotonic` / `flat` |
+| `spearman_rho` | 秩相关（n≥3） |
+| `log_log_slope` | 正值点上 log-log 最小二乘斜率（检验幂律，如 T∝M⁻¹ → −1） |
+| `y_ratio` | y[-1]/y[0] |
+| `points` | `{x, y}` 或 `{x, error}` 表 |
+
+约束：最多 12 个轴点；单点失败不中断；有限样本少于 2 个则该假设失败。
+
+**已验证趋势示例**
+
+| 扫描 | 轴 | 结果 |
+|------|-----|------|
+| Hawking T | M = 1e30…1e32 | `decreasing`，log-log slope ≈ **−1**（∝1/M） |
+| Schwarzschild Kretschmann | M = 1…3（链式） | `increasing`（K∝M² 在固定 r） |
 
 ## 与大荒界生态的关系
 
