@@ -1,9 +1,9 @@
 ---
 feature: hypo-compete
-status: in-progress
+status: delivered
 updated: 2026-09-16
 branch: feat/hypo-compete
-commits:  # filled at delivery
+commits: 41a255f..db16b62
 ---
 
 # L6 假设竞争与再生成
@@ -33,6 +33,6 @@ commits:  # filled at delivery
 
 ## Tasks
 
-- [ ] T1: compete.py — acceptance: 单元测试过
-- [ ] T2: ResearchLoop._maybe_compete — acceptance: 弱首轮 e2e 变 verified
-- [ ] T3: 回归 + 文档
+- [x] T1: compete.py — acceptance: 单元测试过
+- [x] T2: ResearchLoop._maybe_compete — acceptance: 弱首轮 e2e 变 verified
+- [x] T3: 回归 + 文档
