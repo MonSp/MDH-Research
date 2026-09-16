@@ -131,7 +131,7 @@ Grounded in code and evals, not vision slides:
 | **L3 Multi-step orchestration** | LLM `tools[]` sequential chains; `metric_name` injection | ✅ |
 | **L4 Verification** | SymPy zero + bound numeric + vacuum residual gate | ✅ |
 | **L4b Parameter sweep** | Axis expansion + trend summary | ✅ |
-| **L4c Failure replanning** | Auto tool switch on step failure | ❌ |
+| **L4c Failure replanning** | Diagnose + heuristic repair (missing metric/param, synonyms, bad kwargs) then retry | ✅ |
 | **L5 Agent foundations** | Math of the agent’s own state space | ❌ |
 
 ### Compute / reason / verify

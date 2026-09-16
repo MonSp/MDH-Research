@@ -266,7 +266,7 @@ class TestAnalyzePipeline:
         loop = _loop()
         hyp = [{
             "prediction": "fail",
-            "tools": ["compute_scalar_curvature"],
+            "tools": ["not_a_real_tool_xyz"],
             "assumptions": [],
         }]
         loop._hypothesize_patterns = lambda q: hyp  # type: ignore
