@@ -3,7 +3,7 @@ feature: hypo-rank
 status: delivered
 updated: 2026-09-16
 branch: feat/hypo-rank
-commits: 626e61c..HEAD
+commits: 626e61c..4e3b379
 ---
 
 # L5 完善：假设排序 + Journal 固化 foundations
