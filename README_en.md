@@ -132,7 +132,7 @@ Grounded in code and evals, not vision slides:
 | **L4 Verification** | SymPy zero + bound numeric + vacuum residual gate | ✅ |
 | **L4b Parameter sweep** | Axis expansion + trend summary | ✅ |
 | **L4c Failure replanning** | Diagnose + heuristic repair (missing metric/param, synonyms, bad kwargs) then retry | ✅ |
-| **L5 Agent foundations** | Math of the agent’s own state space | ❌ |
+| **L5 Agent foundations (MVP)** | Trajectory entropy, decision pressure, MetricStore state distance, sweep information | ✅ MVP |
 
 ### Compute / reason / verify
 

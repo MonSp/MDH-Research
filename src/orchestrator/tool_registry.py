@@ -741,6 +741,44 @@ def _specs() -> list[ToolSpec]:
         handler="wrapper:hamiltonian_constraint_static", needs_metric=True, side_effect="store_read",
     ))
 
+    # L5 — agent mathematical foundations (process metrics, not world physics)
+    add(ToolSpec(
+        name="trajectory_metrics", category="agent_foundations", game_ability="参悟",
+        description="Shannon entropy / diversity / repair load of a tool sequence",
+        params_schema=_obj({
+            "tool_seq": _arr("Ordered tool names used", {"type": "string"}),
+            "n_success": _num("Successful hypotheses", 1),
+            "n_fail": _num("Failed hypotheses", 0),
+            "n_replans": _num("Repair count", 0),
+        }, ["tool_seq"]),
+        returns="dict", handler="agent_math:trajectory_metrics",
+    ))
+    add(ToolSpec(
+        name="shannon_entropy_bits", category="agent_foundations", game_ability="参悟",
+        description="Shannon entropy in bits of a discrete count distribution",
+        params_schema=_obj({
+            "counts": _arr("Counts", {"type": "number"}),
+        }, ["counts"]),
+        returns="float", handler="agent_math:shannon_entropy",
+    ))
+    add(ToolSpec(
+        name="state_distance", category="agent_foundations", game_ability="参悟",
+        description="L2 distance between two MetricStore fingerprints",
+        params_schema=_obj({
+            "s1": {"type": "object", "description": "snapshot 1"},
+            "s2": {"type": "object", "description": "snapshot 2"},
+        }, ["s1", "s2"]),
+        returns="float", handler="agent_math:state_distance",
+    ))
+    add(ToolSpec(
+        name="sweep_information", category="agent_foundations", game_ability="参悟",
+        description="Information content of a sweep trend (spread bits, certainty, power-law)",
+        params_schema=_obj({
+            "trend": {"type": "object", "description": "trend dict from summarize_trend"},
+        }, ["trend"]),
+        returns="dict", handler="agent_math:sweep_information",
+    ))
+
     return S
 
 

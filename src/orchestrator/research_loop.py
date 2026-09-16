@@ -994,6 +994,16 @@ Example multi-step chain:
         else:
             verdict = "Experiments completed (symbolic simplification pending)"
 
+        # L5: process metrics over the whole run (not world physics)
+        try:
+            from .agent_math import summarize_run
+            from .tool_registry import registry_summary
+
+            n_tools = registry_summary().get("count")
+            foundations = summarize_run(results, n_registry_tools=n_tools)
+        except Exception:
+            foundations = {}
+
         return {
             "verdict": verdict,
             "evidence": evidence,
@@ -1005,4 +1015,5 @@ Example multi-step chain:
                 "symbolic_confirmed": symbolic_confirmed,
                 "residual_gates": residual_gates,
             },
+            "foundations": foundations,
         }
