@@ -1,14 +1,18 @@
 ---
 feature: known-value-gate
-status: in-progress
+status: delivered
 updated: 2026-09-17
 branch: feat/known-value-gate
-commits:  # filled at delivery
+commits: 53a27d8..47505d5
 ---
 
 # L8 已知物理量一致性门禁
 
 ## Report
+
+**What was built** — `known_values.py` 对照教科书关系（Hawking T、宇宙年龄、chirp mass、Schwarzschild QNM）；`conclusion.known_value_checks` + evidence。
+
+**Verification** — `pytest tests/python/ -q` → **444 passed**。
 
 ## [S1] Problem
 
@@ -31,6 +35,6 @@ commits:  # filled at delivery
 
 ## Tasks
 
-- [ ] T1: known_values.py
-- [ ] T2: _analyze 接入
-- [ ] T3: 回归 + 文档
+- [x] T1: known_values.py
+- [x] T2: _analyze 接入
+- [x] T3: 回归 + 文档
