@@ -137,6 +137,7 @@ Grounded in code and evals, not vision slides:
 | **L7 Multi-round iterate** | After competition, up to 2 more rounds of param mutations / unused consumers | ✅ |
 | **L8 Known-value gate** | Textbook checks: Hawking T∝1/M, universe age, chirp mass, Schwarzschild QNM | ✅ |
 | **L9 Research campaign** | Multi-question runs with shared MetricStore; program-level verify/score summary | ✅ |
+| **L10 Research report** | Campaign/single run → structured markdown (verdict/verify/ranking/evidence) | ✅ |
 
 ### Compute / reason / verify
 
