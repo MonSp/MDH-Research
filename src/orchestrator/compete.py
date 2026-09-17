@@ -188,3 +188,69 @@ def llm_alternatives(
         return out
     except Exception:
         return []
+
+
+# Families used to mutate factory parameters on later iterate rounds
+_FACTORY_MUTATIONS = [
+    {"tool": "create_schwarzschild", "params": {"M": 2.0}},
+    {"tool": "create_kerr", "params": {"M": 1.0, "a": 0.3}},
+    {"tool": "create_desitter", "params": {"L": 0.5}},
+]
+
+_EXTRA_CONSUMERS = [
+    "compute_kretschmann",
+    "compute_einstein",
+    "analyze_horizon",
+    "classify_petrov_type",
+]
+
+
+def iterate_hypotheses(
+    question: str,
+    results: list[dict],
+    round_n: int = 1,
+    limit: int = 2,
+) -> list[dict]:
+    """L7: next-round hypotheses — parameter mutations + unused consumers.
+
+    Used after L6 competition still left zero successes.
+    """
+    used = _tools_used(results)
+    alts: list[dict] = []
+
+    # 1) factory parameter mutations (different M / spin / Λ)
+    for fac in _FACTORY_MUTATIONS:
+        if fac["tool"] in used and round_n > 1:
+            # already used this factory; still allow one alternate param set
+            pass
+        consumer = next(
+            (c for c in _EXTRA_CONSUMERS if c not in used),
+            "compute_scalar_curvature",
+        )
+        alts.append({
+            "prediction": f"Iterate r{round_n}: {consumer} on {fac['tool']}",
+            "tools": [
+                {"tool": fac["tool"], "params": dict(fac["params"])},
+                {"tool": consumer, "params": {}},
+            ],
+            "assumptions": [f"iterate-round-{round_n}"],
+        })
+        if len(alts) >= limit:
+            return alts
+
+    # 2) unused consumers on default Schwarzschild
+    for c in _EXTRA_CONSUMERS:
+        if c in used:
+            continue
+        alts.append({
+            "prediction": f"Iterate r{round_n}: {c}",
+            "tools": [
+                {"tool": "create_schwarzschild", "params": {"M": 1.0}},
+                {"tool": c, "params": {}},
+            ],
+            "assumptions": [f"iterate-round-{round_n}"],
+        })
+        if len(alts) >= limit:
+            break
+
+    return alts[:limit]

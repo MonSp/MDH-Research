@@ -267,8 +267,20 @@ class ResearchLoop:
             pre_ranking = None
         results, competed = self._maybe_compete(question, results, pre_ranking, hyp_id)
 
+        # ── L7: iterative rounds while still no working path ──
+        iterate_rounds = 0
+        if not any(r.get("success") for r in results):
+            for _round in range(2):
+                results, added = self._maybe_iterate(question, results, _round + 1)
+                if not added:
+                    break
+                iterate_rounds += 1
+                if any(r.get("success") for r in results):
+                    break
+
         conclusion = self._analyze(question, results)
         conclusion["competed"] = bool(competed)
+        conclusion["iterate_rounds"] = iterate_rounds
         if competed:
             n_comp = sum(
                 1 for r in results
@@ -276,6 +288,11 @@ class ResearchLoop:
             )
             conclusion.setdefault("evidence", []).append(
                 f"COMPETE: first-round weak; evaluated {n_comp} alternatives"
+            )
+        if iterate_rounds:
+            n_it = sum(1 for r in results if str(r.get("round", "")).startswith("iterate"))
+            conclusion.setdefault("evidence", []).append(
+                f"ITERATE: {iterate_rounds} extra round(s), +{n_it} hypotheses"
             )
         self.journal.log_conclusion(
             hypothesis_id=hyp_id,
@@ -290,6 +307,7 @@ class ResearchLoop:
                     conclusion.get("best_hypothesis") or {}
                 ),
                 "competed": bool(competed),
+                "iterate_rounds": iterate_rounds,
             },
         )
 
@@ -404,6 +422,97 @@ class ResearchLoop:
         try:
             self.journal.log_note(
                 f"COMPETE: +{len(new_results)} alternative hypotheses after weak first round"
+            )
+        except Exception:
+            pass
+        return results + new_results, True
+
+    def _maybe_iterate(
+        self,
+        question: str,
+        results: list[dict],
+        round_n: int,
+    ) -> tuple[list[dict], bool]:
+        """L7: one extra iteration of parameter-mutated / unused-consumer hypotheses."""
+        from .compete import iterate_hypotheses
+
+        if any(r.get("success") for r in results):
+            return results, False
+
+        alts = iterate_hypotheses(question, results, round_n=round_n, limit=2)
+        if not alts:
+            return results, False
+
+        new_results: list[dict] = []
+        for alt in alts:
+            try:
+                steps = _steps_from_hypothesis(alt)
+            except ValueError:
+                continue
+            ok = True
+            for s in steps:
+                try:
+                    _resolve_tool_name(s.tool, self.tools)
+                except KeyError:
+                    ok = False
+                    break
+            if not ok:
+                continue
+
+            self.journal.log_hypothesis(
+                question=question,
+                prediction=alt.get("prediction", ""),
+                assumptions=alt.get("assumptions") or [f"iterate-{round_n}"],
+            )
+            try:
+                step_results = self._execute_chain(steps)
+                last = step_results[-1]["result"]
+                metric_name = None
+                for s in step_results:
+                    res = s.get("result")
+                    if isinstance(res, dict) and res.get("metric_name"):
+                        metric_name = res["metric_name"]
+                new_results.append({
+                    "hypothesis": alt,
+                    "steps": step_results,
+                    "result": last,
+                    "metric_name": metric_name,
+                    "success": True,
+                    "round": f"iterate{round_n}",
+                })
+            except Exception as e:
+                partial = getattr(e, "partial_steps", None) or []
+                repaired, replan_note = self._try_replan(
+                    steps, str(e), partial, question
+                )
+                if repaired is not None:
+                    try:
+                        step_results = self._execute_chain(repaired)
+                        last = step_results[-1]["result"]
+                        new_results.append({
+                            "hypothesis": alt,
+                            "steps": step_results,
+                            "result": last,
+                            "replan": replan_note,
+                            "success": True,
+                            "round": f"iterate{round_n}",
+                        })
+                        continue
+                    except Exception as e2:
+                        e = e2
+                new_results.append({
+                    "hypothesis": alt,
+                    "steps": partial,
+                    "error": str(e),
+                    "success": False,
+                    "round": f"iterate{round_n}",
+                })
+
+        if not new_results:
+            return results, False
+        try:
+            self.journal.log_note(
+                f"ITERATE r{round_n}: +{len(new_results)} hypotheses"
             )
         except Exception:
             pass

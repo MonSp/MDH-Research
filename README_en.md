@@ -134,6 +134,7 @@ Grounded in code and evals, not vision slides:
 | **L4c Failure replanning** | Diagnose + heuristic repair (missing metric/param, synonyms, bad kwargs) then retry | ✅ |
 | **L5 Agent foundations** | Trajectory entropy, state distance, sweep info + **hypothesis ranking** (journaled) | ✅ |
 | **L6 Hypothesis competition** | When the first round fails, regenerate alternatives (heuristic/LLM) and re-rank | ✅ |
+| **L7 Multi-round iterate** | After competition, up to 2 more rounds of param mutations / unused consumers | ✅ |
 
 ### Compute / reason / verify
 

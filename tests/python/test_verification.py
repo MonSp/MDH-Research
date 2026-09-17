@@ -265,8 +265,9 @@ class TestAnalyzePipeline:
     def test_all_failed_includes_verification(self, monkeypatch):
         import orchestrator.compete as compete_mod
 
-        # disable L6 competition so this stays a pure all-failed path
+        # disable L6/L7 competition and iteration so this stays all-failed
         monkeypatch.setattr(compete_mod, "should_compete", lambda *a, **k: False)
+        monkeypatch.setattr(compete_mod, "iterate_hypotheses", lambda *a, **k: [])
         loop = _loop()
         hyp = [{
             "prediction": "fail",
