@@ -257,7 +257,26 @@ class ResearchLoop:
                     "success": False,
                 })
 
+        # ── L6: competition / regeneration when first round is weak ──
+        pre_ranking = None
+        try:
+            from .agent_math import rank_hypotheses
+
+            pre_ranking = rank_hypotheses(results)
+        except Exception:
+            pre_ranking = None
+        results, competed = self._maybe_compete(question, results, pre_ranking, hyp_id)
+
         conclusion = self._analyze(question, results)
+        conclusion["competed"] = bool(competed)
+        if competed:
+            n_comp = sum(
+                1 for r in results
+                if r.get("round") == "competition"
+            )
+            conclusion.setdefault("evidence", []).append(
+                f"COMPETE: first-round weak; evaluated {n_comp} alternatives"
+            )
         self.journal.log_conclusion(
             hypothesis_id=hyp_id,
             verdict=conclusion["verdict"],
@@ -270,6 +289,7 @@ class ResearchLoop:
                 "best_hypothesis": serialize_result(
                     conclusion.get("best_hypothesis") or {}
                 ),
+                "competed": bool(competed),
             },
         )
 
@@ -282,6 +302,112 @@ class ResearchLoop:
         }
 
     # ── Hypothesis decomposition ──
+
+    def _maybe_compete(
+        self,
+        question: str,
+        results: list[dict],
+        ranking: list[dict] | None,
+        hyp_id: str | None,
+    ) -> tuple[list[dict], bool]:
+        """L6: run alternative hypotheses when the first round is weak."""
+        from .compete import heuristic_alternatives, llm_alternatives, should_compete
+
+        try:
+            if not should_compete(results, ranking):
+                return results, False
+        except Exception:
+            return results, False
+
+        alts: list[dict] = []
+        if self.llm:
+            try:
+                from .tool_registry import openai_tools_payload
+
+                alts = llm_alternatives(
+                    question, results, openai_tools_payload(), limit=3
+                )
+            except Exception:
+                alts = []
+        if not alts:
+            alts = heuristic_alternatives(question, results, limit=3)
+        if not alts:
+            return results, False
+
+        new_results: list[dict] = []
+        for alt in alts:
+            try:
+                steps = _steps_from_hypothesis(alt)
+            except ValueError:
+                continue
+            ok = True
+            for s in steps:
+                try:
+                    _resolve_tool_name(s.tool, self.tools)
+                except KeyError:
+                    ok = False
+                    break
+            if not ok:
+                continue
+
+            self.journal.log_hypothesis(
+                question=question,
+                prediction=alt.get("prediction", ""),
+                assumptions=alt.get("assumptions") or ["competition"],
+            )
+            try:
+                step_results = self._execute_chain(steps)
+                last = step_results[-1]["result"]
+                metric_name = None
+                for s in step_results:
+                    res = s.get("result")
+                    if isinstance(res, dict) and res.get("metric_name"):
+                        metric_name = res["metric_name"]
+                new_results.append({
+                    "hypothesis": alt,
+                    "steps": step_results,
+                    "result": last,
+                    "metric_name": metric_name,
+                    "success": True,
+                    "round": "competition",
+                })
+            except Exception as e:
+                partial = getattr(e, "partial_steps", None) or []
+                repaired, replan_note = self._try_replan(
+                    steps, str(e), partial, question
+                )
+                if repaired is not None:
+                    try:
+                        step_results = self._execute_chain(repaired)
+                        last = step_results[-1]["result"]
+                        new_results.append({
+                            "hypothesis": alt,
+                            "steps": step_results,
+                            "result": last,
+                            "replan": replan_note,
+                            "success": True,
+                            "round": "competition",
+                        })
+                        continue
+                    except Exception as e2:
+                        e = e2
+                new_results.append({
+                    "hypothesis": alt,
+                    "steps": partial,
+                    "error": str(e),
+                    "success": False,
+                    "round": "competition",
+                })
+
+        if not new_results:
+            return results, False
+        try:
+            self.journal.log_note(
+                f"COMPETE: +{len(new_results)} alternative hypotheses after weak first round"
+            )
+        except Exception:
+            pass
+        return results + new_results, True
 
     def _try_replan(
         self,
