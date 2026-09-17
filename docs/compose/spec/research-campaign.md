@@ -1,14 +1,18 @@
 ---
 feature: research-campaign
-status: in-progress
+status: delivered
 updated: 2026-09-17
 branch: feat/research-campaign
-commits:  # filled at delivery
+commits: 2ecd371..ad1abe1
 ---
 
 # L9 研究战役（多问题编排）
 
 ## Report
+
+**What was built** — `campaign.run_campaign` 多问题共享 store/journal；`summarize_campaign` 程序级汇总。
+
+**Verification** — `pytest tests/python/ -q` → **450 passed**。
 
 ## [S1] Problem
 
@@ -28,5 +32,5 @@ commits:  # filled at delivery
 
 ## Tasks
 
-- [ ] T1: campaign.py
-- [ ] T2: 回归 + 文档
+- [x] T1: campaign.py
+- [x] T2: 回归 + 文档
