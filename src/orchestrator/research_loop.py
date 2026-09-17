@@ -1258,6 +1258,23 @@ Example multi-step chain:
                 f"— {top.get('prediction', '')[:80]}"
             )
 
+        # L8: known-value consistency gate
+        try:
+            from .known_values import check_chain, summarize_checks
+
+            kv = summarize_checks(check_chain(results))
+        except Exception:
+            kv = {"n_checks": 0, "n_passed": 0, "n_failed": 0, "all_passed": False, "checks": []}
+        if kv.get("n_checks"):
+            if kv.get("all_passed"):
+                evidence.append(
+                    f"KNOWN-VALUE PASS: {kv['n_passed']}/{kv['n_checks']} textbook relations"
+                )
+            elif kv.get("n_failed"):
+                evidence.append(
+                    f"KNOWN-VALUE FAIL: {kv['n_failed']}/{kv['n_checks']} relations mismatched"
+                )
+
         return {
             "verdict": verdict,
             "evidence": evidence,
@@ -1272,4 +1289,5 @@ Example multi-step chain:
             "foundations": foundations,
             "hypothesis_ranking": ranking,
             "best_hypothesis": best,
+            "known_value_checks": kv,
         }
