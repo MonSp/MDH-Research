@@ -99,6 +99,7 @@ research/
 - **假设排序**：`score_hypothesis` / `rank_hypotheses`；`conclusion.hypothesis_ranking` + `best_hypothesis`；journal conclusion 带 foundations/ranking extra
 - **假设竞争（L6）**：首轮无成功结果时 `compete.should_compete` → heuristic/LLM 备选 → 再执行（含 replan）→ 重排；`conclusion.competed` + journal `COMPETE:` note
 - **多轮迭代（L7）**：竞争后仍无成功 → `iterate_hypotheses` 参数变体/未用 consumer，最多 2 轮；`conclusion.iterate_rounds` + journal `ITERATE rN:`
+- **已知量门禁（L8）**：`known_values.py` 对照 Hawking T / 宇宙年龄 / chirp mass / Schwarzschild QNM；`conclusion.known_value_checks` + evidence `KNOWN-VALUE PASS/FAIL`
 
 ## 与大荒界生态的关系
 

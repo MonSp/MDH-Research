@@ -136,6 +136,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L5 智能体数学基础** | 轨迹熵 / 状态距离 / sweep 信息量 + **假设排序**（journal 固化） | ✅ |
 | **L6 假设竞争** | 首轮全失败时启发式/LLM 再生成备选假设并重排 | ✅ |
 | **L7 多轮迭代** | 竞争后仍失败时最多 2 轮参数变体/未用 consumer 迭代 | ✅ |
+| **L8 已知量门禁** | Hawking T∝1/M、宇宙年龄、chirp mass、Schwarzschild QNM 教科书对照 | ✅ |
 
 ### 计算 / 推理 / 验证
 
