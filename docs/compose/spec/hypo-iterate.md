@@ -1,14 +1,18 @@
 ---
 feature: hypo-iterate
-status: in-progress
+status: delivered
 updated: 2026-09-17
 branch: feat/hypo-iterate
-commits:  # filled at delivery
+commits: de18f74..44d1a23
 ---
 
 # L7 多轮迭代搜索
 
 ## Report
+
+**What was built** — 竞赛后仍无成功路径时，最多 2 轮 `iterate_hypotheses`（工厂参数变体 + 未用 consumer）；`conclusion.iterate_rounds` + journal `ITERATE rN:`。有成功即停。
+
+**Verification** — `pytest tests/python/ -q` → **434 passed**。
 
 ## [S1] Problem
 
@@ -28,6 +32,6 @@ L6 只做一轮竞争；若仍无成功路径，没有后续迭代。
 
 ## Tasks
 
-- [ ] T1: iterate_hypotheses
-- [ ] T2: _maybe_iterate 接入
-- [ ] T3: 回归 + 文档
+- [x] T1: iterate_hypotheses
+- [x] T2: _maybe_iterate 接入
+- [x] T3: 回归 + 文档
