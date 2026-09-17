@@ -98,6 +98,7 @@ research/
 - **智能体数学基础**：`agent_math.py` 研究轨迹 Shannon 熵 / decision pressure / MetricStore 状态 L2 距离 / sweep 信息量；`conclusion.foundations` 附带 run 级过程指标
 - **假设排序**：`score_hypothesis` / `rank_hypotheses`；`conclusion.hypothesis_ranking` + `best_hypothesis`；journal conclusion 带 foundations/ranking extra
 - **假设竞争（L6）**：首轮无成功结果时 `compete.should_compete` → heuristic/LLM 备选 → 再执行（含 replan）→ 重排；`conclusion.competed` + journal `COMPETE:` note
+- **多轮迭代（L7）**：竞争后仍无成功 → `iterate_hypotheses` 参数变体/未用 consumer，最多 2 轮；`conclusion.iterate_rounds` + journal `ITERATE rN:`
 
 ## 与大荒界生态的关系
 
