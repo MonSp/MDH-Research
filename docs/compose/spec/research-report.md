@@ -1,14 +1,18 @@
 ---
 feature: research-report
-status: in-progress
+status: delivered
 updated: 2026-09-17
 branch: feat/research-report
-commits:  # filled at delivery
+commits: f0a7d69..31b43af
 ---
 
 # L10 研究报告合成
 
 ## Report
+
+**What was built** — `report.render_single_run` / `render_campaign` / `write_report` 把 run/战役结论合成 markdown。
+
+**Verification** — `pytest tests/python/ -q` → **455 passed**。
 
 ## [S1] Problem
 
@@ -27,5 +31,5 @@ commits:  # filled at delivery
 
 ## Tasks
 
-- [ ] T1: report.py
-- [ ] T2: 回归 + 文档
+- [x] T1: report.py
+- [x] T2: 回归 + 文档
