@@ -1,9 +1,9 @@
 ---
 feature: journal-analytics
-status: in-progress
+status: delivered
 updated: 2026-09-18
 branch: feat/journal-analytics
-commits:  # filled at delivery
+commits: 4d28f2e..127131e
 ---
 
 # L11 跨会话 Journal 分析
@@ -28,5 +28,5 @@ Journal JSONL 分散在会话目录；缺少跨会话过程指标对比。
 
 ## Tasks
 
-- [ ] T1: journal_analytics.py
-- [ ] T2: 回归 + 文档
+- [x] T1: journal_analytics.py
+- [x] T2: 回归 + 文档
