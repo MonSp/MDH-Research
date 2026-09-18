@@ -1,9 +1,9 @@
 ---
 feature: known-value-catalog
-status: in-progress
+status: delivered
 updated: 2026-09-18
 branch: feat/known-value-catalog
-commits:  # filled at delivery
+commits: da406ce..73046a5
 ---
 
 # L18 可扩展已知量目录
@@ -28,5 +28,5 @@ L8 只有 4 条硬编码教科书关系；新增关系要改代码。
 
 ## Tasks
 
-- [ ] T1: catalog JSON + evaluate
-- [ ] T2: CLI + 回归 + 文档
+- [x] T1: catalog JSON + evaluate
+- [x] T2: CLI + 回归 + 文档
