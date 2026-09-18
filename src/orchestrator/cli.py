@@ -189,6 +189,20 @@ def cmd_memory(args: argparse.Namespace) -> int:
     return 2
 
 
+def cmd_known_values(args: argparse.Namespace) -> int:
+    _ensure_paths()
+    from .known_values import DEFAULT_CATALOG_PATH, load_catalog
+
+    cat = load_catalog(args.path)
+    if args.json:
+        _print_json({"path": args.path or DEFAULT_CATALOG_PATH, "entries": cat})
+        return 0
+    print(f"catalog: {args.path or DEFAULT_CATALOG_PATH} ({len(cat)} entries)")
+    for e in cat:
+        print(f"- {e.get('id')} [{e.get('kind')}] tool={e.get('tool')} {e.get('description','')}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="orchestrator", description="MDH-Research CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -247,6 +261,11 @@ def build_parser() -> argparse.ArgumentParser:
     mem.add_argument("--limit", type=int, default=3)
     mem.add_argument("--json", action="store_true")
     mem.set_defaults(func=cmd_memory)
+
+    kv = sub.add_parser("known-values", help="List extensible known-value catalog")
+    kv.add_argument("--path", default=None, help="Catalog JSON path")
+    kv.add_argument("--json", action="store_true")
+    kv.set_defaults(func=cmd_known_values)
 
     return p
 

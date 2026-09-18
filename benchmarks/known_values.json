@@ -1,0 +1,66 @@
+[
+  {
+    "id": "hawking_temperature",
+    "tool": "hawking_temperature",
+    "extract": "T_K",
+    "kind": "formula",
+    "formula": "hawking_T",
+    "params": ["M"],
+    "tol_rel": 0.25,
+    "description": "T_K ≈ 6.17e-8 * (M_sun / M)"
+  },
+  {
+    "id": "universe_age",
+    "tool": "age_of_universe",
+    "extract": "age_gyr",
+    "kind": "range",
+    "min": 12.0,
+    "max": 15.0,
+    "description": "Universe age in ΛCDM ≈ 12–15 Gyr"
+  },
+  {
+    "id": "chirp_mass",
+    "tool": "chirp_mass",
+    "kind": "formula",
+    "formula": "chirp_mass",
+    "params": ["m1", "m2"],
+    "tol_rel": 1e-6,
+    "description": "M_c = (m1 m2)^{3/5}/(m1+m2)^{1/5}"
+  },
+  {
+    "id": "schwarzschild_qnm",
+    "tool": "schwarzschild_qnm",
+    "extract": "omega_R",
+    "kind": "near",
+    "expected": 0.3737,
+    "tol_rel": 0.05,
+    "description": "Schwarzschild l=2,n=0 QNM ω_R ≈ 0.3737 (M=1)"
+  },
+  {
+    "id": "deflection_angle_positive",
+    "tool": "deflection_angle",
+    "kind": "positive",
+    "description": "Light deflection angle must be finite and non-negative"
+  },
+  {
+    "id": "tidal_deformability_order",
+    "tool": "tidal_deformability",
+    "extract": null,
+    "kind": "range",
+    "min": 0.0,
+    "max": 1e4,
+    "description": "Λ dimensionless positive for typical NS"
+  },
+  {
+    "id": "merger_time_positive",
+    "tool": "merger_time",
+    "kind": "positive",
+    "description": "merger time must be finite and positive"
+  },
+  {
+    "id": "hubble_parameter_positive",
+    "tool": "hubble_parameter",
+    "kind": "positive",
+    "description": "H(a) must be finite and positive for a in (0,1]"
+  }
+]
