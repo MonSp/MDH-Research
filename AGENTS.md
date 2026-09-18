@@ -103,6 +103,7 @@ research/
 - **研究战役（L9）**：`campaign.run_campaign(questions)` 共享 MetricStore/journal；`summarize_campaign` 输出 verify_rate / known_value_rate / store_growth / store_distance
 - **研究报告（L10）**：`report.render_single_run` / `render_campaign` / `write_report` 把结论合成 markdown（纯文本，无绘图）
 - **Journal 分析（L11）**：`journal_analytics.load_journal_dir` / `session_metrics` / `compare_sessions` / `render_analytics` 跨会话过程指标
+- **CLI（L12）**：`python -m orchestrator.cli run|campaign|report|analytics` 统一入口；`--llm auto|on|off`、`--json`、`--report/-o`
 
 ## 与大荒界生态的关系
 
