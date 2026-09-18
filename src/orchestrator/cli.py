@@ -203,6 +203,13 @@ def cmd_known_values(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_serve(args: argparse.Namespace) -> int:
+    _ensure_paths()
+    from .api import main as api_main
+
+    return api_main(["--host", args.host, "--port", str(args.port)])
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="orchestrator", description="MDH-Research CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -266,6 +273,11 @@ def build_parser() -> argparse.ArgumentParser:
     kv.add_argument("--path", default=None, help="Catalog JSON path")
     kv.add_argument("--json", action="store_true")
     kv.set_defaults(func=cmd_known_values)
+
+    serve = sub.add_parser("serve", help="Start HTTP API (requires fastapi+uvicorn)")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8080)
+    serve.set_defaults(func=cmd_serve)
 
     return p
 

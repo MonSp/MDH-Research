@@ -147,6 +147,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L16 CI 修复** | 安装 pybind11 并传 `pybind11_DIR`，使 golden-bench 工作流可配置/构建 | ✅ |
 | **L17 CI 加固** | 安装 pyyaml；测试顶层不 import yaml（可选 skip） | ✅ |
 | **L18 已知量目录** | JSON 可扩展目录（formula/range/near/positive）；`cli known-values` | ✅ |
+| **L19 HTTP API** | FastAPI `/run` `/campaign` `/bench` `/health`；`cli serve` | ✅ |
 
 ### 计算 / 推理 / 验证
 
