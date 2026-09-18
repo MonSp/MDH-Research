@@ -1,0 +1,46 @@
+name: golden-bench
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-bench:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: pip install sympy scipy numpy matplotlib pytest httpx
+
+      - name: Configure C++ core
+        run: cmake -S . -B build -DBUILD_PYTHON_BINDINGS=ON -DBUILD_TESTS=ON
+
+      - name: Build
+        run: cmake --build build -j2
+
+      - name: C++ tests
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Python tests
+        run: PYTHONPATH=src:build/src/bindings python3 -m pytest tests/python/ -q --tb=line
+        env:
+          # disable LLM for deterministic CI
+          LLM_API_KEY: ""
+
+      - name: Golden benchmark
+        run: PYTHONPATH=src:build/src/bindings python3 -m orchestrator.cli bench --llm off
+        env:
+          LLM_API_KEY: ""

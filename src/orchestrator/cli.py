@@ -27,13 +27,17 @@ def _ensure_paths() -> None:
             sys.path.insert(0, p)
 
 
-def _make_loop(log_dir: str | None, llm: bool | None):
+def _make_loop(log_dir: str | None, llm: bool | None, memory_path: str | None = None):
     from .journal import ResearchJournal
     from .research_loop import ResearchLoop
 
     d = log_dir or tempfile.mkdtemp(prefix="mdh-research-")
     os.makedirs(d, exist_ok=True)
-    return ResearchLoop(journal=ResearchJournal(log_dir=d), llm_client=llm)
+    return ResearchLoop(
+        journal=ResearchJournal(log_dir=d),
+        llm_client=llm,
+        memory_path=memory_path,
+    )
 
 
 def _print_json(obj: Any) -> None:
@@ -43,7 +47,7 @@ def _print_json(obj: Any) -> None:
 def cmd_run(args: argparse.Namespace) -> int:
     _ensure_paths()
     llm = None if args.llm == "auto" else (args.llm == "on")
-    loop = _make_loop(args.log_dir, llm)
+    loop = _make_loop(args.log_dir, llm, memory_path=args.memory)
     result = loop.run(args.question)
     if args.json:
         _print_json(result.get("conclusion"))
@@ -74,9 +78,10 @@ def cmd_campaign(args: argparse.Namespace) -> int:
         return 2
 
     log_dir = args.log_dir or tempfile.mkdtemp(prefix="mdh-campaign-")
+    llm = None if args.llm == "auto" else (args.llm == "on")
 
     def factory():
-        return _make_loop(log_dir, llm=None if args.llm == "auto" else (args.llm == "on"))
+        return _make_loop(log_dir, llm, memory_path=args.memory)
 
     out = run_campaign(
         questions,
@@ -198,6 +203,10 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("question")
     run.add_argument("--log-dir", default=None)
     run.add_argument("--json", action="store_true")
+    run.add_argument(
+        "--memory", default=None,
+        help="Enable hypothesis memory at PATH (opt-in)",
+    )
     add_llm(run)
     run.set_defaults(func=cmd_run)
 
@@ -208,6 +217,10 @@ def build_parser() -> argparse.ArgumentParser:
     camp.add_argument("--json", action="store_true", help="Print summary JSON only")
     camp.add_argument("--fresh-store", action="store_true")
     camp.add_argument("--stop-on-verified", action="store_true")
+    camp.add_argument(
+        "--memory", default=None,
+        help="Enable hypothesis memory at PATH (opt-in)",
+    )
     add_llm(camp)
     camp.set_defaults(func=cmd_campaign)
 
