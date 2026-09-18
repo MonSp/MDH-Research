@@ -1,9 +1,9 @@
 ---
 feature: ci-pyyaml
-status: in-progress
+status: delivered
 updated: 2026-09-18
 branch: fix/ci-pyyaml
-commits:  # filled at delivery
+commits: 1703a92..97f97e9
 ---
 
 # L17 CI 加固：pyyaml 收集失败
@@ -26,5 +26,5 @@ L16 过 cmake 后，pytest 在收集 `test_platform_integration.py` 时因顶层
 
 ## Tasks
 
-- [ ] T1: 代码/workflow/pyproject 修复
-- [ ] T2: 回归 + 文档
+- [x] T1: 代码/workflow/pyproject 修复
+- [x] T2: 回归 + 文档
