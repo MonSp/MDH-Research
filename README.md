@@ -144,6 +144,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L13 黄金基准** | 5 个标准问题 + expect；`cli bench` 一键回归（失败 exit 1） | ✅ |
 | **L14 假设记忆** | 成功 tool 链按关键词召回并注入后续 run；`cli memory` / `--memory` | ✅ |
 | **L15 平台集成** | CLI `--memory` 挂接 + GitHub Actions 黄金基准门禁 | ✅ |
+| **L16 CI 修复** | 安装 pybind11 并传 `pybind11_DIR`，使 golden-bench 工作流可配置/构建 | ✅ |
 
 ### 计算 / 推理 / 验证
 
