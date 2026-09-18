@@ -144,6 +144,7 @@ Grounded in code and evals, not vision slides:
 | **L14 Hypothesis memory** | Remember successful tool chains; keyword recall + inject; `cli memory` / `--memory` | ✅ |
 | **L15 Platform integration** | CLI `--memory` flag + GitHub Actions golden-bench gate | ✅ |
 | **L16 CI fix** | Install pybind11 and pass `pybind11_DIR` so golden-bench configures | ✅ |
+| **L17 CI harden** | Install pyyaml; tests must not import yaml at module top-level | ✅ |
 
 ### Compute / reason / verify
 
