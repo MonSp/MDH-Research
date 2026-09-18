@@ -1,9 +1,9 @@
 ---
 feature: golden-benchmark
-status: in-progress
+status: delivered
 updated: 2026-09-18
 branch: feat/golden-benchmark
-commits:  # filled at delivery
+commits: fd796a0..3aec55c
 ---
 
 # L13 黄金基准套件
@@ -27,6 +27,6 @@ commits:  # filled at delivery
 
 ## Tasks
 
-- [ ] T1: benchmark.py + suite
-- [ ] T2: CLI bench
-- [ ] T3: 回归 + 文档
+- [x] T1: benchmark.py + suite
+- [x] T2: CLI bench
+- [x] T3: 回归 + 文档
