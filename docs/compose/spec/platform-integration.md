@@ -1,9 +1,9 @@
 ---
 feature: platform-integration
-status: in-progress
+status: delivered
 updated: 2026-09-18
 branch: feat/platform-integration
-commits:  # filled at delivery
+commits: fcafad5..eb53cc1
 ---
 
 # L15 平台集成：CLI memory 挂接 + CI 基准门禁
@@ -26,6 +26,6 @@ L14 memory 只能 API 启用；CLI 无 `--memory`；无 CI 一键跑 pytest + go
 
 ## Tasks
 
-- [ ] T1: CLI --memory
-- [ ] T2: CI workflow
-- [ ] T3: 回归 + 文档
+- [x] T1: CLI --memory
+- [x] T2: CI workflow
+- [x] T3: 回归 + 文档
