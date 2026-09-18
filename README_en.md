@@ -141,7 +141,8 @@ Grounded in code and evals, not vision slides:
 | **L11 Journal analytics** | Cross-session JSONL metrics: COMPETE/ITERATE/REPLAN, success rate, top tools | ✅ |
 | **L12 CLI facade** | `python -m orchestrator.cli` run/campaign/report/analytics/bench | ✅ |
 | **L13 Golden benchmark** | 5 standard questions + expects; `cli bench` one-shot regression | ✅ |
-| **L14 Hypothesis memory** | Remember successful tool chains; keyword recall + inject; `cli memory` | ✅ |
+| **L14 Hypothesis memory** | Remember successful tool chains; keyword recall + inject; `cli memory` / `--memory` | ✅ |
+| **L15 Platform integration** | CLI `--memory` flag + GitHub Actions golden-bench gate | ✅ |
 
 ### Compute / reason / verify
 
