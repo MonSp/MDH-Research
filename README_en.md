@@ -138,6 +138,7 @@ Grounded in code and evals, not vision slides:
 | **L8 Known-value gate** | Textbook checks: Hawking T∝1/M, universe age, chirp mass, Schwarzschild QNM | ✅ |
 | **L9 Research campaign** | Multi-question runs with shared MetricStore; program-level verify/score summary | ✅ |
 | **L10 Research report** | Campaign/single run → structured markdown (verdict/verify/ranking/evidence) | ✅ |
+| **L11 Journal analytics** | Cross-session JSONL metrics: COMPETE/ITERATE/REPLAN, success rate, top tools | ✅ |
 
 ### Compute / reason / verify
 
