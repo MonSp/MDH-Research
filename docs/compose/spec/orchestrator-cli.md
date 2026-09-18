@@ -1,9 +1,9 @@
 ---
 feature: orchestrator-cli
-status: in-progress
+status: delivered
 updated: 2026-09-18
 branch: feat/orchestrator-cli
-commits:  # filled at delivery
+commits: 73e8176..bcbc051
 ---
 
 # L12 Orchestrator CLI 门面
@@ -29,5 +29,5 @@ L0–L11 能力只能在 Python API 里调用；缺少统一命令行入口。
 
 ## Tasks
 
-- [ ] T1: cli.py
-- [ ] T2: 回归 + 文档
+- [x] T1: cli.py
+- [x] T2: 回归 + 文档
