@@ -1,9 +1,9 @@
 ---
 feature: hypothesis-memory
-status: in-progress
+status: delivered
 updated: 2026-09-18
 branch: feat/hypothesis-memory
-commits:  # filled at delivery
+commits: 01c090f..c13ca29
 ---
 
 # L14 假设记忆（跨战役复用）
@@ -29,6 +29,6 @@ commits:  # filled at delivery
 
 ## Tasks
 
-- [ ] T1: hypothesis_memory.py
-- [ ] T2: ResearchLoop + CLI
-- [ ] T3: 回归 + 文档
+- [x] T1: hypothesis_memory.py
+- [x] T2: ResearchLoop + CLI
+- [x] T3: 回归 + 文档
