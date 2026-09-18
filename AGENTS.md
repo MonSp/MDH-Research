@@ -105,6 +105,7 @@ research/
 - **Journal 分析（L11）**：`journal_analytics.load_journal_dir` / `session_metrics` / `compare_sessions` / `render_analytics` 跨会话过程指标
 - **CLI（L12）**：`python -m orchestrator.cli run|campaign|report|analytics|bench` 统一入口；`--llm auto|on|off`、`--json`、`--report/-o`
 - **黄金基准（L13）**：`benchmarks/golden_questions.json` + `benchmark.run_benchmark`；`cli bench` 校验 verdict/tools/sweep/known-value，失败 exit 1
+- **假设记忆（L14）**：`hypothesis_memory` 持久化成功链；`ResearchLoop(memory_path=...)` **显式路径才启用**；run 前 inject、run 后 remember；`cli memory summary|list|recall|inject`
 
 ## 与大荒界生态的关系
 

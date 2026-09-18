@@ -142,6 +142,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L11 Journal 分析** | 跨会话 JSONL 过程指标：COMPETE/ITERATE/REPLAN、成功率、top tools | ✅ |
 | **L12 CLI 门面** | `python -m orchestrator.cli` run/campaign/report/analytics/bench | ✅ |
 | **L13 黄金基准** | 5 个标准问题 + expect；`cli bench` 一键回归（失败 exit 1） | ✅ |
+| **L14 假设记忆** | 成功 tool 链按关键词召回并注入后续 run；`cli memory` | ✅ |
 
 ### 计算 / 推理 / 验证
 
