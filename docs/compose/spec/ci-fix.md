@@ -1,9 +1,9 @@
 ---
 feature: ci-fix
-status: in-progress
+status: delivered
 updated: 2026-09-18
 branch: fix/golden-bench-ci
-commits:  # filled at delivery
+commits: 7a527b3..99d5c32
 ---
 
 # L16 修复 golden-bench CI
@@ -28,5 +28,5 @@ L15 工作流首次跑挂：`find_package(pybind11)` 失败——CI 未安装 py
 
 ## Tasks
 
-- [ ] T1: workflow fix
-- [ ] T2: 回归 + 文档
+- [x] T1: workflow fix
+- [x] T2: 回归 + 文档
