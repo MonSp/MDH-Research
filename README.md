@@ -139,6 +139,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L8 已知量门禁** | Hawking T∝1/M、宇宙年龄、chirp mass、Schwarzschild QNM 教科书对照 | ✅ |
 | **L9 研究战役** | 多问题共享 MetricStore；程序级 verify/known-value/score 汇总 | ✅ |
 | **L10 研究报告** | 战役/单次 run → 结构化 markdown（verdict/验证/ranking/证据） | ✅ |
+| **L11 Journal 分析** | 跨会话 JSONL 过程指标：COMPETE/ITERATE/REPLAN、成功率、top tools | ✅ |
 
 ### 计算 / 推理 / 验证
 

@@ -102,6 +102,7 @@ research/
 - **已知量门禁（L8）**：`known_values.py` 对照 Hawking T / 宇宙年龄 / chirp mass / Schwarzschild QNM；`conclusion.known_value_checks` + evidence `KNOWN-VALUE PASS/FAIL`
 - **研究战役（L9）**：`campaign.run_campaign(questions)` 共享 MetricStore/journal；`summarize_campaign` 输出 verify_rate / known_value_rate / store_growth / store_distance
 - **研究报告（L10）**：`report.render_single_run` / `render_campaign` / `write_report` 把结论合成 markdown（纯文本，无绘图）
+- **Journal 分析（L11）**：`journal_analytics.load_journal_dir` / `session_metrics` / `compare_sessions` / `render_analytics` 跨会话过程指标
 
 ## 与大荒界生态的关系
 
