@@ -108,6 +108,7 @@ research/
 - **假设记忆（L14）**：`hypothesis_memory` 持久化成功链；`ResearchLoop(memory_path=...)` **显式路径才启用**；run 前 inject、run 后 remember；`cli memory summary|list|recall|inject`；CLI `run|campaign --memory PATH`
 - **平台集成（L15）**：`.github/workflows/golden-bench.yml` 在 push/PR 上跑 C++ build + pytest + `cli bench --llm off`（CI 关闭 LLM 与 memory 保证确定性）
 - **CI 修复（L16）**：workflow 先 `pip install pybind11`，再 `-Dpybind11_DIR=$(python3 -c 'import pybind11; print(pybind11.get_cmake_dir())')`
+- **CI 加固（L17）**：workflow 安装 `pyyaml`；测试文件不得顶层 `import yaml`（函数内 try/skip）；dev 依赖含 pyyaml
 
 ## 与大荒界生态的关系
 
