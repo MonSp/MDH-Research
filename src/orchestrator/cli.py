@@ -144,6 +144,46 @@ def cmd_bench(args: argparse.Namespace) -> int:
     return 0 if summary.get("n_passed", 0) == summary.get("n_cases", 0) else 1
 
 
+def cmd_memory(args: argparse.Namespace) -> int:
+    _ensure_paths()
+    from .hypothesis_memory import (
+        inject_memory_candidates,
+        load_memory,
+        memory_summary,
+        recall_hypotheses,
+    )
+
+    if args.action == "summary":
+        summary = memory_summary(args.path)
+        _print_json(summary)
+        return 0
+    if args.action == "list":
+        mem = load_memory(args.path)
+        if args.json:
+            _print_json(mem)
+        else:
+            for e in mem:
+                tools = " → ".join(e.get("tools") or [])
+                print(f"[{e.get('score')}] {tools}  | {str(e.get('prediction'))[:60]}")
+        return 0
+    if args.action == "recall":
+        if not args.question:
+            print("recall requires --question", file=sys.stderr)
+            return 2
+        rec = recall_hypotheses(args.question, path=args.path, limit=args.limit)
+        _print_json(rec)
+        return 0
+    if args.action == "inject":
+        if not args.question:
+            print("inject requires --question", file=sys.stderr)
+            return 2
+        hyps = inject_memory_candidates(args.question, path=args.path, limit=args.limit)
+        _print_json(hyps)
+        return 0
+    print(f"unknown memory action: {args.action}", file=sys.stderr)
+    return 2
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="orchestrator", description="MDH-Research CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -186,6 +226,14 @@ def build_parser() -> argparse.ArgumentParser:
     ben.add_argument("--json", action="store_true")
     add_llm(ben)
     ben.set_defaults(func=cmd_bench)
+
+    mem = sub.add_parser("memory", help="Hypothesis memory store operations")
+    mem.add_argument("action", choices=("summary", "list", "recall", "inject"))
+    mem.add_argument("--path", default=None)
+    mem.add_argument("--question", default=None)
+    mem.add_argument("--limit", type=int, default=3)
+    mem.add_argument("--json", action="store_true")
+    mem.set_defaults(func=cmd_memory)
 
     return p
 

@@ -117,16 +117,38 @@ class ResearchLoop:
     """Hypothesis → experiment (tool chain) → analysis → conclusion."""
 
     def __init__(self, journal: ResearchJournal | None = None,
-                 llm_client: Any = None):
+                 llm_client: Any = None,
+                 memory_path: str | bool | None = None):
         self.journal = journal or ResearchJournal()
         self.tools = _get_tools()
         # llm_client=False disables LLM; None auto-detects from env
         if llm_client is None and os.environ.get("LLM_API_KEY"):
             llm_client = True
         self.llm = llm_client
+        # memory_path: str → enable store at that path; None/False → disabled
+        self.memory_path = memory_path
 
     def run(self, question: str) -> dict[str, Any]:
         hypotheses = self._hypothesize(question)
+
+        # ── L14: inject recalled hypotheses from memory as extra candidates ──
+        if self.memory_path:
+            try:
+                from .hypothesis_memory import inject_memory_candidates
+
+                recalled = inject_memory_candidates(
+                    question, path=self.memory_path, limit=2
+                )
+                if recalled:
+                    hypotheses = hypotheses + recalled
+                    try:
+                        self.journal.log_note(
+                            f"MEMORY: injected {len(recalled)} recalled hypotheses"
+                        )
+                    except Exception:
+                        pass
+            except Exception:
+                pass
 
         results = []
         hyp_id = None
@@ -278,9 +300,24 @@ class ResearchLoop:
                 if any(r.get("success") for r in results):
                     break
 
+        # ── L14: remember successful hypotheses for future recall ──
+        remembered_n = 0
+        if self.memory_path:
+            try:
+                from .hypothesis_memory import remember_from_run
+
+                mem = remember_from_run(
+                    {"question": question, "results": results},
+                    path=self.memory_path,
+                )
+                remembered_n = len(mem)
+            except Exception:
+                remembered_n = 0
+
         conclusion = self._analyze(question, results)
         conclusion["competed"] = bool(competed)
         conclusion["iterate_rounds"] = iterate_rounds
+        conclusion["memory_entries"] = remembered_n
         if competed:
             n_comp = sum(
                 1 for r in results
