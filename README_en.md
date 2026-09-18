@@ -139,6 +139,7 @@ Grounded in code and evals, not vision slides:
 | **L9 Research campaign** | Multi-question runs with shared MetricStore; program-level verify/score summary | ✅ |
 | **L10 Research report** | Campaign/single run → structured markdown (verdict/verify/ranking/evidence) | ✅ |
 | **L11 Journal analytics** | Cross-session JSONL metrics: COMPETE/ITERATE/REPLAN, success rate, top tools | ✅ |
+| **L12 CLI facade** | `python -m orchestrator.cli` run/campaign/report/analytics | ✅ |
 
 ### Compute / reason / verify
 
