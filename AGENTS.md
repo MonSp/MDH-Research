@@ -101,6 +101,7 @@ research/
 - **多轮迭代（L7）**：竞争后仍无成功 → `iterate_hypotheses` 参数变体/未用 consumer，最多 2 轮；`conclusion.iterate_rounds` + journal `ITERATE rN:`
 - **已知量门禁（L8）**：`known_values.py` 对照 Hawking T / 宇宙年龄 / chirp mass / Schwarzschild QNM；`conclusion.known_value_checks` + evidence `KNOWN-VALUE PASS/FAIL`
 - **研究战役（L9）**：`campaign.run_campaign(questions)` 共享 MetricStore/journal；`summarize_campaign` 输出 verify_rate / known_value_rate / store_growth / store_distance
+- **研究报告（L10）**：`report.render_single_run` / `render_campaign` / `write_report` 把结论合成 markdown（纯文本，无绘图）
 
 ## 与大荒界生态的关系
 
