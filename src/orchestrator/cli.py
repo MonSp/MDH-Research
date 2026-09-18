@@ -130,6 +130,20 @@ def cmd_analytics(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_bench(args: argparse.Namespace) -> int:
+    _ensure_paths()
+    from .benchmark import render_benchmark, run_benchmark
+
+    llm = None if args.llm == "auto" else (args.llm == "on")
+    summary = run_benchmark(suite_path=args.suite, llm=llm)
+    if args.json:
+        _print_json(summary)
+    else:
+        print(render_benchmark(summary))
+    # non-zero if any case failed
+    return 0 if summary.get("n_passed", 0) == summary.get("n_cases", 0) else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="orchestrator", description="MDH-Research CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -166,6 +180,12 @@ def build_parser() -> argparse.ArgumentParser:
     ana.add_argument("--journal-dir", required=True)
     ana.add_argument("--json", action="store_true")
     ana.set_defaults(func=cmd_analytics)
+
+    ben = sub.add_parser("bench", help="Run golden benchmark suite")
+    ben.add_argument("--suite", default=None, help="Path to golden_questions.json")
+    ben.add_argument("--json", action="store_true")
+    add_llm(ben)
+    ben.set_defaults(func=cmd_bench)
 
     return p
 

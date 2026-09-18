@@ -1,0 +1,54 @@
+[
+  {
+    "id": "schwarzschild-R",
+    "question": "What is the scalar curvature of Schwarzschild spacetime?",
+    "expect": {
+      "verdict": "Hypotheses verified",
+      "tools_any": ["compute_scalar_curvature"],
+      "min_success": 1
+    }
+  },
+  {
+    "id": "hawking-T",
+    "question": "What is the Hawking temperature of a solar mass black hole?",
+    "expect": {
+      "verdict_in": [
+        "Hypotheses verified",
+        "Experiments completed (symbolic simplification pending)"
+      ],
+      "tools_any": ["hawking_temperature"],
+      "min_success": 1,
+      "known_value_pass_min": 1
+    }
+  },
+  {
+    "id": "universe-age",
+    "question": "What is the age of the universe?",
+    "expect": {
+      "verdict_in": [
+        "Hypotheses verified",
+        "Experiments completed (symbolic simplification pending)"
+      ],
+      "tools_any": ["age_of_universe"],
+      "min_success": 1,
+      "known_value_pass_min": 1
+    }
+  },
+  {
+    "id": "hawking-sweep",
+    "question": "How does Hawking temperature vary as a function of mass? Scan several masses.",
+    "expect": {
+      "min_success": 1,
+      "sweep": true,
+      "sweep_direction": "decreasing"
+    }
+  },
+  {
+    "id": "killing-symmetry",
+    "question": "Classify the Killing symmetries of Schwarzschild",
+    "expect": {
+      "min_success": 1,
+      "tools_any": ["classify_symmetry"]
+    }
+  }
+]
