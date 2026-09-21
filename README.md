@@ -148,6 +148,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L17 CI 加固** | 安装 pyyaml；测试顶层不 import yaml（可选 skip） | ✅ |
 | **L18 已知量目录** | JSON 可扩展目录（formula/range/near/positive）；`cli known-values` | ✅ |
 | **L19 HTTP API** | FastAPI `/run` `/campaign` `/bench` `/health`；`cli serve` | ✅ |
+| **L20 战役趋势** | 多份 campaign JSON → verify/kv/score first→last 趋势；`cli trend` | ✅ |
 
 ### 计算 / 推理 / 验证
 
