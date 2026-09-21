@@ -113,6 +113,7 @@ research/
 - **HTTP API（L19）**：`api.create_app()`；GET health/known-values/memory/summary；POST run/campaign/bench；`cli serve`；模块勿用 `from __future__ import annotations`（FastAPI body 误判为 query）
 - **战役趋势（L20）**：`trend.aggregate_campaigns(path)` 对多份 campaign JSON 算 first→last delta（verify_rate / known_value_rate / mean_best_score）；`cli trend PATH [--json]`
 - **API 趋势/报告（L21）**：POST `/trend` `/report`；GET `/analytics?journal_dir=`；远程可查报告与跨会话指标
+- **基准扩展（L22）**：`benchmarks/golden_questions.json` 扩至 10 题；`cli bench --llm off` 仍为 CI 门禁
 
 ## 与大荒界生态的关系
 
