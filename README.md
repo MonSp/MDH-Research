@@ -153,6 +153,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L22 基准扩展** | 黄金 suite 扩至 10 题（Kretschmann/蒸发/QNM/chirp 等） | ✅ |
 | **L23 检查点快照** | run/campaign 结论 JSON 落盘；`cli checkpoint save|list|show` | ✅ |
 | **L24 API 检查点** | HTTP `/checkpoint` `/checkpoint/list` `/checkpoint/show` | ✅ |
+| **L25 能力地图** | 内省 L0–L24 状态并生成 markdown/JSON；`cli capmap` | ✅ |
 
 ### 计算 / 推理 / 验证
 

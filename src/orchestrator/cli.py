@@ -265,6 +265,17 @@ def cmd_checkpoint(args: argparse.Namespace) -> int:
     return 2
 
 
+def cmd_capmap(args: argparse.Namespace) -> int:
+    _ensure_paths()
+    from .capability_map import capability_summary, render_capability_map
+
+    if args.json:
+        _print_json(capability_summary())
+    else:
+        print(render_capability_map())
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="orchestrator", description="MDH-Research CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -347,6 +358,10 @@ def build_parser() -> argparse.ArgumentParser:
     ckpt.add_argument("--json", action="store_true")
     ckpt.add_argument("--llm", choices=("auto", "on", "off"), default="off")
     ckpt.set_defaults(func=cmd_checkpoint)
+
+    cap = sub.add_parser("capmap", help="Emit L0–L24 platform capability map")
+    cap.add_argument("--json", action="store_true")
+    cap.set_defaults(func=cmd_capmap)
 
     return p
 
