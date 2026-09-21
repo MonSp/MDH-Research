@@ -114,6 +114,7 @@ research/
 - **战役趋势（L20）**：`trend.aggregate_campaigns(path)` 对多份 campaign JSON 算 first→last delta（verify_rate / known_value_rate / mean_best_score）；`cli trend PATH [--json]`
 - **API 趋势/报告（L21）**：POST `/trend` `/report`；GET `/analytics?journal_dir=`；远程可查报告与跨会话指标
 - **基准扩展（L22）**：`benchmarks/golden_questions.json` 扩至 10 题；`cli bench --llm off` 仍为 CI 门禁
+- **检查点快照（L23）**：`checkpoint.save_checkpoint` 将 run/campaign 结论落盘；`checkpoint_to_run_result` 可喂给 report；`cli checkpoint save|list|show`
 
 ## 与大荒界生态的关系
 

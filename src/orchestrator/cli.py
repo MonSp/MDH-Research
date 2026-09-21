@@ -222,6 +222,49 @@ def cmd_trend(args: argparse.Namespace) -> int:
     return 0 if out.get("n_files", 0) > 0 else 2
 
 
+def cmd_checkpoint(args: argparse.Namespace) -> int:
+    _ensure_paths()
+    from .checkpoint import (
+        list_checkpoints,
+        load_checkpoint,
+        render_checkpoint,
+        save_checkpoint,
+    )
+
+    if args.action == "save":
+        if not args.question:
+            print("save requires --question", file=sys.stderr)
+            return 2
+        llm = None if args.llm == "auto" else (args.llm == "on")
+        loop = _make_loop(None, llm)
+        result = loop.run(args.question)
+        path = save_checkpoint(result, path=args.path, label=args.label)
+        if args.json:
+            _print_json({"path": path, "verdict": result["conclusion"].get("verdict")})
+        else:
+            print(f"wrote {path}")
+        return 0
+    if args.action == "list":
+        items = list_checkpoints(args.path)
+        if args.json:
+            _print_json(items)
+        else:
+            for it in items:
+                print(f"{it['name']}  kind={it.get('kind')} verdict={it.get('verdict')}")
+        return 0
+    if args.action == "show":
+        if not args.path:
+            print("show requires --path", file=sys.stderr)
+            return 2
+        ckpt = load_checkpoint(args.path)
+        if args.json:
+            _print_json(ckpt)
+        else:
+            print(render_checkpoint(ckpt))
+        return 0
+    return 2
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="orchestrator", description="MDH-Research CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -295,6 +338,15 @@ def build_parser() -> argparse.ArgumentParser:
     trend.add_argument("path", help="Directory, file, or glob of campaign JSON reports")
     trend.add_argument("--json", action="store_true")
     trend.set_defaults(func=cmd_trend)
+
+    ckpt = sub.add_parser("checkpoint", help="Save/list/show research run checkpoints")
+    ckpt.add_argument("action", choices=("save", "list", "show"))
+    ckpt.add_argument("--question", default=None, help="For save: run this question")
+    ckpt.add_argument("--label", default=None)
+    ckpt.add_argument("--path", default=None, help="Checkpoint file or directory")
+    ckpt.add_argument("--json", action="store_true")
+    ckpt.add_argument("--llm", choices=("auto", "on", "off"), default="off")
+    ckpt.set_defaults(func=cmd_checkpoint)
 
     return p
 
