@@ -1,9 +1,9 @@
 ---
 feature: api-trend-report
-status: in-progress
+status: delivered
 updated: 2026-09-21
 branch: feat/api-trend-report
-commits:  # filled at delivery
+commits: d5c53d2..05ffbfd
 ---
 
 # L21 HTTP 趋势 / 报告 / 分析端点
@@ -31,5 +31,5 @@ L19 API 只有 run/campaign/bench；L10/L11/L20 的报告与趋势只能 CLI。
 
 ## Tasks
 
-- [ ] T1: api endpoints
-- [ ] T2: 回归 + 文档
+- [x] T1: api endpoints
+- [x] T2: 回归 + 文档
