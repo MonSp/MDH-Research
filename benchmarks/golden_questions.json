@@ -50,5 +50,49 @@
       "min_success": 1,
       "tools_any": ["classify_symmetry"]
     }
+  },
+  {
+    "id": "schwarzschild-kretschmann",
+    "question": "Compute the Kretschmann scalar of Schwarzschild",
+    "expect": {
+      "min_success": 1,
+      "tools_any": ["compute_kretschmann"]
+    }
+  },
+  {
+    "id": "hawking-evaporation",
+    "question": "What is the Hawking temperature and evaporation time for a black hole?",
+    "expect": {
+      "min_success": 1,
+      "tools_any": ["hawking_temperature", "evaporation_time"]
+    }
+  },
+  {
+    "id": "minkowski-curvature",
+    "question": "What is the scalar curvature of flat Minkowski spacetime?",
+    "expect": {
+      "verdict_in": [
+        "Hypotheses verified",
+        "Experiments completed (symbolic simplification pending)"
+      ],
+      "min_success": 1,
+      "tools_any": ["compute_scalar_curvature"]
+    }
+  },
+  {
+    "id": "qnm-schwarzschild",
+    "question": "What are the Schwarzschild quasinormal mode frequencies?",
+    "expect": {
+      "min_success": 1,
+      "tools_any": ["schwarzschild_qnm", "qnm_spectrum"]
+    }
+  },
+  {
+    "id": "chirp-mass",
+    "question": "What is the chirp mass of a 30+30 solar mass binary?",
+    "expect": {
+      "min_success": 1,
+      "tools_any": ["chirp_mass"]
+    }
   }
 ]

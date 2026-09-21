@@ -149,6 +149,7 @@ Grounded in code and evals, not vision slides:
 | **L19 HTTP API** | FastAPI `/run` `/campaign` `/bench` `/health`; `cli serve` | ✅ |
 | **L20 Campaign trend** | Aggregate campaign JSONs → verify/kv/score first→last; `cli trend` | ✅ |
 | **L21 API trend/report** | HTTP `/trend` `/report` `/analytics` wire L10/L11/L20 remotely | ✅ |
+| **L22 Bench expand** | Golden suite to 10 questions (Kretschmann/evaporation/QNM/chirp…) | ✅ |
 
 ### Compute / reason / verify
 
