@@ -151,6 +151,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L20 战役趋势** | 多份 campaign JSON → verify/kv/score first→last 趋势；`cli trend` | ✅ |
 | **L21 API 趋势/报告** | HTTP `/trend` `/report` `/analytics` 接通 L10/L11/L20 | ✅ |
 | **L22 基准扩展** | 黄金 suite 扩至 10 题（Kretschmann/蒸发/QNM/chirp 等） | ✅ |
+| **L23 检查点快照** | run/campaign 结论 JSON 落盘；`cli checkpoint save|list|show` | ✅ |
 
 ### 计算 / 推理 / 验证
 
