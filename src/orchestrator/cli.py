@@ -210,6 +210,18 @@ def cmd_serve(args: argparse.Namespace) -> int:
     return api_main(["--host", args.host, "--port", str(args.port)])
 
 
+def cmd_trend(args: argparse.Namespace) -> int:
+    _ensure_paths()
+    from .trend import aggregate_campaigns, render_trend
+
+    out = aggregate_campaigns(args.path)
+    if args.json:
+        _print_json(out)
+    else:
+        print(render_trend(out))
+    return 0 if out.get("n_files", 0) > 0 else 2
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="orchestrator", description="MDH-Research CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -278,6 +290,11 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8080)
     serve.set_defaults(func=cmd_serve)
+
+    trend = sub.add_parser("trend", help="Aggregate campaign JSON reports over time")
+    trend.add_argument("path", help="Directory, file, or glob of campaign JSON reports")
+    trend.add_argument("--json", action="store_true")
+    trend.set_defaults(func=cmd_trend)
 
     return p
 
