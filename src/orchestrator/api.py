@@ -153,6 +153,45 @@ def create_app() -> Any:
 
         return ms(path)
 
+    class CheckpointSaveRequest(BaseModel):
+        question: str
+        label: Optional[str] = None
+        path: Optional[str] = None
+        llm: Optional[bool] = False
+        memory_path: Optional[str] = None
+
+    @app.post("/checkpoint")
+    def checkpoint_save(req: CheckpointSaveRequest):
+        if not req.question:
+            raise HTTPException(status_code=400, detail="question required")
+        from .checkpoint import save_checkpoint
+
+        loop = _make_loop(llm=req.llm, memory_path=req.memory_path)
+        result = loop.run(req.question)
+        path = save_checkpoint(result, path=req.path, label=req.label)
+        return {
+            "path": path,
+            "verdict": (result.get("conclusion") or {}).get("verdict"),
+            "label": req.label,
+        }
+
+    @app.get("/checkpoint/list")
+    def checkpoint_list(path: Optional[str] = None):
+        from .checkpoint import list_checkpoints
+
+        return {"items": list_checkpoints(path)}
+
+    @app.get("/checkpoint/show")
+    def checkpoint_show(path: str):
+        if not path:
+            raise HTTPException(status_code=400, detail="path required")
+        if not os.path.isfile(path):
+            raise HTTPException(status_code=404, detail=f"not found: {path}")
+        from .checkpoint import load_checkpoint, render_checkpoint
+
+        ckpt = load_checkpoint(path)
+        return {"checkpoint": ckpt, "markdown": render_checkpoint(ckpt)}
+
     return app
 
 
