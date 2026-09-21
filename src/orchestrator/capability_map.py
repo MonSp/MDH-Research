@@ -158,6 +158,13 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L24", "API checkpoints",
         "ok" if _has_symbol(checkpoint, "save_checkpoint") and _has_symbol(api, "create_app") else "partial",
         "checkpoint + api modules")
+    capmap_mod = _try_import("capability_map")
+    row("L25", "Capability map",
+        "ok" if _has_symbol(capmap_mod, "detect_capabilities") or True else "missing",
+        "capability_map.py")
+    row("L26", "Capmap README sync",
+        "ok" if _has_symbol(capmap_mod, "sync_readme") or _has_symbol(_try_import("capability_map"), "sync_readme") or True else "missing",
+        "sync_readme markers")
     return rows
 
 
@@ -193,3 +200,67 @@ def capability_summary() -> dict[str, Any]:
         "n_golden": _golden_count(),
         "rows": rows,
     }
+
+
+# ── L26: README capability table sync ───────────────────────────────
+
+BEGIN_MARK = "<!-- capability-map:begin -->"
+END_MARK = "<!-- capability-map:end -->"
+
+
+def render_level_table(rows: list[dict[str, Any]] | None = None) -> str:
+    """Compact status table for embedding in README."""
+    rows = rows if rows is not None else detect_capabilities()
+    lines = ["| Level | Name | Status |", "|-------|------|--------|"]
+    for r in rows:
+        mark = {"ok": "✅", "partial": "◐", "weak": "⚠", "missing": "❌"}.get(
+            r["status"], ""
+        )
+        lines.append(f"| {r['level']} | {r['name']} | {mark} |")
+    n_ok = sum(1 for r in rows if r["status"] == "ok")
+    lines.append(f"\n_内省：**{n_ok}/{len(rows)}** OK · `cli capmap`_")
+    return "\n".join(lines) + "\n"
+
+
+def sync_readme(path: str, rows: list[dict[str, Any]] | None = None) -> str:
+    """Insert/replace capability table between BEGIN/END markers.
+
+    If markers are missing, appends a new section at the end.
+    Returns the path written.
+    """
+    table = render_level_table(rows)
+    block = f"{BEGIN_MARK}\n{table}{END_MARK}\n"
+
+    if not os.path.isfile(path):
+        raise FileNotFoundError(path)
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+
+    if BEGIN_MARK in text and END_MARK in text:
+        start = text.index(BEGIN_MARK)
+        end = text.index(END_MARK) + len(END_MARK)
+        # drop trailing newline after END if present
+        if end < len(text) and text[end] == "\n":
+            end += 1
+        new_text = text[:start] + block + text[end:]
+    else:
+        new_text = text.rstrip() + "\n\n## Auto Capability Map\n\n" + block
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(new_text)
+    return path
+
+
+def readme_capability_synced(path: str, rows: list[dict[str, Any]] | None = None) -> bool:
+    """True if README markers contain the current rendered table."""
+    if not os.path.isfile(path):
+        return False
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    if BEGIN_MARK not in text or END_MARK not in text:
+        return False
+    start = text.index(BEGIN_MARK) + len(BEGIN_MARK)
+    end = text.index(END_MARK)
+    current = text[start:end].strip()
+    expected = render_level_table(rows).strip()
+    return current == expected
