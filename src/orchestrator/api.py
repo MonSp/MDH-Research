@@ -55,6 +55,15 @@ def create_app() -> Any:
         suite_path: Optional[str] = None
         llm: Optional[bool] = False
 
+    class TrendRequest(BaseModel):
+        path: str
+        markdown: bool = False
+
+    class ReportRequest(BaseModel):
+        campaign_json: str
+        output: Optional[str] = None
+        markdown: bool = True
+
     @app.get("/health")
     def health():
         from .tool_registry import registry_summary
@@ -88,6 +97,49 @@ def create_app() -> Any:
         from .benchmark import run_benchmark
 
         return run_benchmark(suite_path=req.suite_path, llm=req.llm)
+
+    @app.post("/trend")
+    def trend(req: TrendRequest):
+        if not req.path:
+            raise HTTPException(status_code=400, detail="path required")
+        from .trend import aggregate_campaigns, render_trend
+
+        out = aggregate_campaigns(req.path)
+        if req.markdown:
+            return {"markdown": render_trend(out), "summary": out}
+        return out
+
+    @app.post("/report")
+    def report(req: ReportRequest):
+        if not req.campaign_json:
+            raise HTTPException(status_code=400, detail="campaign_json required")
+        if not os.path.isfile(req.campaign_json):
+            raise HTTPException(status_code=404, detail=f"not found: {req.campaign_json}")
+        from .report import render_campaign, render_single_run, write_report
+        import json as _json
+
+        with open(req.campaign_json, encoding="utf-8") as f:
+            data = _json.load(f)
+        if isinstance(data, dict) and ("summary" in data or "questions" in data):
+            md = render_campaign(data)
+        else:
+            md = render_single_run(data)
+        if req.output:
+            write_report(md, req.output)
+            return {"path": req.output, "written": True}
+        return {"markdown": md}
+
+    @app.get("/analytics")
+    def analytics(journal_dir: str):
+        if not journal_dir:
+            raise HTTPException(status_code=400, detail="journal_dir required")
+        from .journal_analytics import compare_sessions, load_journal_dir, render_analytics
+
+        sessions = load_journal_dir(journal_dir)
+        if not sessions:
+            raise HTTPException(status_code=404, detail=f"no journals in {journal_dir}")
+        summary = compare_sessions(sessions)
+        return summary
 
     @app.get("/known-values")
     def known_values(path: Optional[str] = None):

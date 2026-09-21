@@ -149,6 +149,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L18 已知量目录** | JSON 可扩展目录（formula/range/near/positive）；`cli known-values` | ✅ |
 | **L19 HTTP API** | FastAPI `/run` `/campaign` `/bench` `/health`；`cli serve` | ✅ |
 | **L20 战役趋势** | 多份 campaign JSON → verify/kv/score first→last 趋势；`cli trend` | ✅ |
+| **L21 API 趋势/报告** | HTTP `/trend` `/report` `/analytics` 接通 L10/L11/L20 | ✅ |
 
 ### 计算 / 推理 / 验证
 
