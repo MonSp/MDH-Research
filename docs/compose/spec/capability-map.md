@@ -1,9 +1,9 @@
 ---
 feature: capability-map
-status: in-progress
+status: delivered
 updated: 2026-09-21
 branch: feat/capability-map
-commits:  # filled at delivery
+commits: 1c8935a..3447be7
 ---
 
 # L25 平台能力地图生成器
@@ -31,5 +31,5 @@ README 能力表手工维护，易与代码漂移。
 
 ## Tasks
 
-- [ ] T1: capability_map.py + CLI
-- [ ] T2: 回归 + 文档
+- [x] T1: capability_map.py + CLI
+- [x] T2: 回归 + 文档
