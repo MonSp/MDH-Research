@@ -1,9 +1,9 @@
 ---
 feature: campaign-trend
-status: in-progress
+status: delivered
 updated: 2026-09-21
 branch: feat/campaign-trend
-commits:  # filled at delivery
+commits: 8afb078..16a95d3
 ---
 
 # L20 战役趋势聚合
@@ -31,5 +31,5 @@ commits:  # filled at delivery
 
 ## Tasks
 
-- [ ] T1: trend.py + CLI
-- [ ] T2: 回归 + 文档
+- [x] T1: trend.py + CLI
+- [x] T2: 回归 + 文档
