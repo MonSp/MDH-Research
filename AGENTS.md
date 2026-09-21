@@ -115,6 +115,7 @@ research/
 - **API 趋势/报告（L21）**：POST `/trend` `/report`；GET `/analytics?journal_dir=`；远程可查报告与跨会话指标
 - **基准扩展（L22）**：`benchmarks/golden_questions.json` 扩至 10 题；`cli bench --llm off` 仍为 CI 门禁
 - **检查点快照（L23）**：`checkpoint.save_checkpoint` 将 run/campaign 结论落盘；`checkpoint_to_run_result` 可喂给 report；`cli checkpoint save|list|show`
+- **API 检查点（L24）**：POST `/checkpoint`；GET `/checkpoint/list` `/checkpoint/show?path=`；远程存取研究结论快照
 
 ## 与大荒界生态的关系
 
