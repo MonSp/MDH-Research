@@ -1,9 +1,9 @@
 ---
 feature: http-api
-status: in-progress
+status: delivered
 updated: 2026-09-18
 branch: feat/http-api
-commits:  # filled at delivery
+commits: e2c643f..4dd5f4e
 ---
 
 # L19 HTTP API 门面
@@ -29,5 +29,5 @@ commits:  # filled at delivery
 
 ## Tasks
 
-- [ ] T1: api.py + CLI serve
-- [ ] T2: 回归 + 文档
+- [x] T1: api.py + CLI serve
+- [x] T2: 回归 + 文档
