@@ -152,6 +152,7 @@ Grounded in code and evals, not vision slides:
 | **L22 Bench expand** | Golden suite to 10 questions (Kretschmann/evaporation/QNM/chirp…) | ✅ |
 | **L23 Checkpoint snapshots** | Persist run/campaign conclusions as JSON; `cli checkpoint save|list|show` | ✅ |
 | **L24 API checkpoints** | HTTP `/checkpoint` `/checkpoint/list` `/checkpoint/show` | ✅ |
+| **L25 Capability map** | Introspect L0–L24 status to markdown/JSON; `cli capmap` | ✅ |
 
 ### Compute / reason / verify
 
