@@ -52,3 +52,8 @@ jobs:
         run: PYTHONPATH=src:build/src/bindings python3 -m orchestrator.cli bench --llm off
         env:
           LLM_API_KEY: ""
+
+      - name: Capability README sync check
+        run: PYTHONPATH=src:build/src/bindings python3 -m orchestrator.cli capmap --check-readme
+        env:
+          LLM_API_KEY: ""
