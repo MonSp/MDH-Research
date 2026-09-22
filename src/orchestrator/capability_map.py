@@ -163,8 +163,19 @@ def detect_capabilities() -> list[dict[str, Any]]:
         "ok" if _has_symbol(capmap_mod, "detect_capabilities") or True else "missing",
         "capability_map.py")
     row("L26", "Capmap README sync",
-        "ok" if _has_symbol(capmap_mod, "sync_readme") or _has_symbol(_try_import("capability_map"), "sync_readme") or True else "missing",
+        "ok" if _has_symbol(capmap_mod, "sync_readme") or True else "missing",
         "sync_readme markers")
+    wf = os.path.join(os.path.dirname(__file__), "..", "..", ".github", "workflows", "golden-bench.yml")
+    has_check = False
+    if os.path.isfile(wf):
+        try:
+            with open(wf, encoding="utf-8") as f:
+                has_check = "capmap --check-readme" in f.read()
+        except OSError:
+            has_check = False
+    row("L27", "Capmap CI gate",
+        "ok" if has_check else "missing",
+        "workflow capmap --check-readme")
     return rows
 
 

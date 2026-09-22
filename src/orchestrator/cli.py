@@ -267,8 +267,30 @@ def cmd_checkpoint(args: argparse.Namespace) -> int:
 
 def cmd_capmap(args: argparse.Namespace) -> int:
     _ensure_paths()
-    from .capability_map import capability_summary, render_capability_map, sync_readme
+    from .capability_map import (
+        capability_summary,
+        readme_capability_synced,
+        render_capability_map,
+        sync_readme,
+    )
     import os
+
+    if getattr(args, "check_readme", False):
+        root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
+        stale = []
+        for name in ("README.md", "README_en.md"):
+            p = os.path.join(root, name)
+            if os.path.isfile(p) and not readme_capability_synced(p):
+                stale.append(name)
+        if stale:
+            print(
+                f"capability table out of sync in: {', '.join(stale)}\n"
+                "run: python -m orchestrator.cli capmap --write-readme",
+                file=sys.stderr,
+            )
+            return 1
+        print("README capability tables are in sync")
+        return 0
 
     if args.write_readme:
         root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
@@ -379,6 +401,10 @@ def build_parser() -> argparse.ArgumentParser:
     cap.add_argument(
         "--write-readme", action="store_true",
         help="Sync capability table into README.md / README_en.md markers",
+    )
+    cap.add_argument(
+        "--check-readme", action="store_true",
+        help="Exit 1 if README capability tables are out of sync (CI gate)",
     )
     cap.set_defaults(func=cmd_capmap)
 
