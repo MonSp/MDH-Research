@@ -6,6 +6,7 @@ import math
 from typing import Any
 
 MAX_SWEEP_POINTS = 12
+MAX_GRID_POINTS = 16  # e.g. 4×4
 
 
 def expand_axis(axis: dict[str, Any]) -> list[float]:
@@ -228,4 +229,96 @@ def format_trend_sentence(axis_name: str, extract_key: str | None, trend: dict) 
     return (
         f"SWEEP: {key} vs {axis_name} → {d} "
         f"(n={trend['n']}, {trend['y_min']:.6g}…{trend['y_max']:.6g}{extra})"
+    )
+
+
+def expand_grid(
+    x_axis: dict[str, Any],
+    y_axis: dict[str, Any],
+) -> list[dict[str, float]]:
+    """Expand two axes into a Cartesian grid of (x, y) points.
+
+    Total cells capped at MAX_GRID_POINTS (clips the larger axis first).
+    """
+    xs = expand_axis(x_axis)
+    ys = expand_axis(y_axis)
+    # shrink larger axis so len(xs)*len(ys) <= MAX_GRID_POINTS
+    while len(xs) * len(ys) > MAX_GRID_POINTS:
+        if len(xs) >= len(ys):
+            xs = xs[:-1]
+        else:
+            ys = ys[:-1]
+        if not xs or not ys:
+            raise ValueError("grid axes empty after cap")
+    return [
+        {"x": float(x), "y": float(y)}
+        for y in ys
+        for x in xs
+    ]
+
+
+def summarize_grid(
+    cells: list[dict[str, Any]],
+    x_name: str = "x",
+    y_name: str = "y",
+    truncated: bool = False,
+) -> dict[str, Any]:
+    """Summarize a 2D grid of {x, y, z|error} cells."""
+    finite = [
+        c for c in cells
+        if c.get("z") is not None and math.isfinite(float(c["z"]))
+    ]
+    if not finite:
+        return {"n": 0, "direction": "empty", "truncated": truncated}
+
+    zs = [float(c["z"]) for c in finite]
+    scale = max(abs(z) for z in zs) or 1.0
+    eps = 1e-12 * scale
+
+    # monotonic along x at first fixed y (first row)
+    xs_row = sorted({float(c["x"]) for c in finite})
+    ys_col = sorted({float(c["y"]) for c in finite})
+    first_y = ys_col[0] if ys_col else None
+    row = [
+        (float(c["x"]), float(c["z"]))
+        for c in finite
+        if first_y is not None and float(c["y"]) == first_y
+    ]
+    row.sort()
+    direction_x = "unknown"
+    if len(row) >= 2:
+        diffs = [row[i + 1][1] - row[i][1] for i in range(len(row) - 1)]
+        if all(abs(d) <= eps for d in diffs):
+            direction_x = "flat"
+        elif all(d > eps for d in diffs):
+            direction_x = "increasing"
+        elif all(d < -eps for d in diffs):
+            direction_x = "decreasing"
+        else:
+            direction_x = "non-monotonic"
+
+    return {
+        "n": len(zs),
+        "n_x": len(xs_row),
+        "n_y": len(ys_col),
+        "z_min": min(zs),
+        "z_max": max(zs),
+        "z_first": zs[0],
+        "z_last": zs[-1],
+        "direction_along_x": direction_x,
+        "truncated": truncated,
+        "cells": finite,
+        "x_name": x_name,
+        "y_name": y_name,
+    }
+
+
+def format_grid_sentence(grid: dict, extract_key: str | None = None) -> str:
+    key = extract_key or "z"
+    if grid.get("n", 0) == 0:
+        return f"GRID: no finite {key} samples"
+    return (
+        f"GRID: {key} on {grid.get('x_name')}×{grid.get('y_name')} → "
+        f"{grid.get('direction_along_x')} along x "
+        f"(n={grid['n']}, z={grid['z_min']:.6g}…{grid['z_max']:.6g})"
     )

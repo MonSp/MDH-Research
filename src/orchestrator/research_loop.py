@@ -873,6 +873,11 @@ Example multi-step chain:
         )
 
         sweep = hyp["sweep"] or {}
+
+        # L29: 2D grid path
+        if sweep.get("grid"):
+            return self._run_grid_hypothesis(hyp, hyp_id, sweep)
+
         axis = sweep.get("axis") or {}
         axis_name = str(axis.get("name") or "x")
         extract_key = sweep.get("extract")
@@ -1047,6 +1052,103 @@ Example multi-step chain:
             "success": True,
         }
 
+    def _run_grid_hypothesis(self, hyp: dict, hyp_id: str, sweep: dict) -> dict:
+        """2D grid sweep: expand two axes, call tool at each cell, summarize."""
+        from .param_sweep import (
+            expand_grid,
+            extract_numeric,
+            format_grid_sentence,
+            substitute_params,
+            summarize_grid,
+        )
+
+        grid_spec = sweep.get("grid") or {}
+        x_axis = grid_spec.get("x") or grid_spec.get("axis_x") or {}
+        y_axis = grid_spec.get("y") or grid_spec.get("axis_y") or {}
+        x_name = str(x_axis.get("name") or "x")
+        y_name = str(y_axis.get("name") or "y")
+        extract_key = sweep.get("extract") or grid_spec.get("extract")
+        tool = sweep.get("tool") or (hyp.get("tools") or [{}])[0].get("tool") \
+            if isinstance(hyp.get("tools"), list) else sweep.get("tool")
+
+        if not tool or not isinstance(tool, str):
+            err = "grid sweep needs sweep.tool"
+            self.journal.log_error("sweep", err)
+            return {
+                "hypothesis": hyp, "steps": [], "error": err, "success": False,
+            }
+
+        try:
+            cells_spec = expand_grid(x_axis, y_axis)
+        except Exception as e:
+            self.journal.log_error("sweep", f"bad grid: {e}")
+            return {
+                "hypothesis": hyp, "steps": [],
+                "error": f"bad grid: {e}", "success": False,
+            }
+
+        base_params = dict(sweep.get("params") or {})
+        exp_id = self.journal.log_experiment(
+            tool=f"grid:{tool}",
+            params=serialize_result({
+                "x_axis": x_axis, "y_axis": y_axis, "extract": extract_key,
+            }),
+            hypothesis_id=hyp_id,
+        )
+
+        cells: list[dict[str, Any]] = []
+        start = time.time()
+        for cell in cells_spec:
+            params = substitute_params(base_params, x_name, cell["x"])
+            params = substitute_params(params, y_name, cell["y"])
+            eval_pt = {**base_params, x_name: cell["x"], y_name: cell["y"]}
+            try:
+                raw = self._call_tool(tool, params)
+                z = extract_numeric(raw, extract_key, eval_point=eval_pt)
+                if z is None:
+                    cells.append({
+                        "x": cell["x"], "y": cell["y"],
+                        "error": f"no numeric extract key={extract_key}",
+                    })
+                else:
+                    cells.append({"x": cell["x"], "y": cell["y"], "z": z})
+            except Exception as e:
+                cells.append({"x": cell["x"], "y": cell["y"], "error": str(e)})
+        duration = (time.time() - start) * 1000
+
+        truncated = False  # expand_grid already caps
+        grid = summarize_grid(cells, x_name, y_name, truncated=truncated)
+        sentence = format_grid_sentence(grid, extract_key)
+
+        if grid.get("n", 0) < 1:
+            self.journal.log_observation(
+                exp_id,
+                serialize_result({"grid": {"cells": cells}, "error": "no finite samples"}),
+                duration_ms=duration,
+                success=False,
+            )
+            return {
+                "hypothesis": hyp, "steps": [],
+                "grid": {"cells": cells},
+                "error": "grid produced no finite samples",
+                "success": False,
+            }
+
+        self.journal.log_observation(
+            exp_id,
+            serialize_result({"grid": grid, "summary": sentence}),
+            duration_ms=duration,
+            success=True,
+        )
+        return {
+            "hypothesis": hyp,
+            "steps": [{"tool": tool, "params": {}, "result": grid}],
+            "grid": grid,
+            "summary": sentence,
+            "result": grid,
+            "success": True,
+        }
+
     def _execute_chain(self, steps: list[ChainStep]) -> list[dict]:
         """Run steps sequentially, threading metric_name through context."""
         context: dict[str, Any] = {}
@@ -1165,11 +1267,17 @@ Example multi-step chain:
             tools = [s.get("tool") for s in (r.get("steps") or [])]
             metric_name = r.get("metric_name")
 
-            # parameter-sweep evidence
+            # parameter-sweep / grid evidence
             sw = r.get("sweep")
             if sw and sw.get("trend") and sw["trend"].get("n", 0) >= 2:
                 evidence.append(sw.get("summary") or str(sw["trend"]))
-                # a completed multi-point sweep is experimental evidence
+                any_confirmed = True
+            gr = r.get("grid")
+            if gr and gr.get("n", 0) >= 1:
+                evidence.append(
+                    r.get("summary")
+                    or f"GRID: n={gr.get('n')} z={gr.get('z_min')}…{gr.get('z_max')}"
+                )
                 any_confirmed = True
 
             extra_params: dict[str, float] = {}

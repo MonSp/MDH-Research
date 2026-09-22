@@ -156,6 +156,7 @@ Grounded in code and evals, not vision slides:
 | **L26 Capmap README sync** | `cli capmap --write-readme` embeds introspected table in README markers | ✅ |
 | **L27 Capmap CI gate** | `capmap --check-readme` + golden-bench step; fails on README drift | ✅ |
 | **L28 API capmap** | HTTP `/capmap` `/capmap/check-readme`; CI installs fastapi for `create_app` test | ✅ |
+| **L29 2D grid sweep** | `sweep.grid` Cartesian product (≤16 cells) + monotonicity along x | ✅ |
 
 ### Compute / reason / verify
 
@@ -370,6 +371,7 @@ Apache 2.0
 | L26 | Capmap README sync | ✅ |
 | L27 | Capmap CI gate | ✅ |
 | L28 | API capmap + CI fastapi | ✅ |
+| L29 | 2D grid sweep | ✅ |
 
-_内省：**30/30** OK · `cli capmap`_
+_内省：**31/31** OK · `cli capmap`_
 <!-- capability-map:end -->

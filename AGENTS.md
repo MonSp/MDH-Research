@@ -94,6 +94,7 @@ research/
 - **顺序链**：hypothesis 支持 `tools: [t1, t2, ...]`；`_execute_chain` 串行执行，`create_*` 的 `metric_name` 自动注入后续 `needs_metric` 步骤；缺 metric 时显式失败
 - **验证升级**：`verification.sympy_is_zero` / `vacuum_residual_check`；`_analyze` 流水线 = 数值点检 → SymPy 恒零 → 真空残差门禁；结论带 `verification` 字段。Kerr 为对角近似，残差门禁 tol=1e-4、远场采样
 - **参数扫描**：hypothesis 可带 `sweep`（axis values 或 start/stop/n/log；extract dict key；链式 inject）。单点失败不中断；有限样本 < 2 则失败；MAX 12 点；Expression 在参考点 evaluate
+- **二维网格扫描（L29）**：`sweep.grid = {x, y}` + `sweep.tool`；`expand_grid` 笛卡尔积上限 16 格；`summarize_grid` 报 n/z 范围与沿 x 单调性；`_run_grid_hypothesis` 每格调用工具并 journal `grid:<tool>`
 - **失败重规划**：`replan.diagnose_failure` + `heuristic_repair`；缺 metric 前置 factory / 注入 diagonal；缺参填默认；同义词与坏 kwargs 修复；journal note 记 `REPLAN(...)`；不可修则保持失败
 - **智能体数学基础**：`agent_math.py` 研究轨迹 Shannon 熵 / decision pressure / MetricStore 状态 L2 距离 / sweep 信息量；`conclusion.foundations` 附带 run 级过程指标
 - **假设排序**：`score_hypothesis` / `rank_hypotheses`；`conclusion.hypothesis_ranking` + `best_hypothesis`；journal conclusion 带 foundations/ranking extra
@@ -120,6 +121,7 @@ research/
 - **能力表同步（L26）**：`cli capmap --write-readme` 用 `capability-map:begin/end` 标记刷新 README/README_en
 - **能力表 CI 门禁（L27）**：`cli capmap --check-readme` 不一致 exit 1；golden-bench workflow 含该步骤
 - **API 能力地图（L28）**：GET `/capmap`、`/capmap/check-readme`；workflow 安装 `fastapi uvicorn`；`create_app` 测试缺 fastapi 时 skip
+- **二维网格扫描（L29）**：`param_sweep.expand_grid`/`summarize_grid`；`ResearchLoop._run_grid_hypothesis` 处理 `sweep.grid`；证据路径同 sweep（`grid.n>=1`）
 
 ## 与大荒界生态的关系
 
