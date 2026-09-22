@@ -847,6 +847,30 @@ Example multi-step chain:
                 "assumptions": ["Schwarzschild metric"],
             })
 
+        elif "chirp" in q:
+            hypotheses.append({
+                "prediction": "Chirp mass M_c = (m1 m2)^{3/5}/(m1+m2)^{1/5}",
+                "tool": "chirp_mass",
+                "params": {"m1": 30.0, "m2": 30.0},
+                "assumptions": ["30+30 solar-mass binary (solar units)"],
+            })
+
+        elif "quasinormal" in q or " qnm" in q or "ringdown" in q:
+            if "kerr" in q or "spin" in q or "rotat" in q:
+                hypotheses.append({
+                    "prediction": "Kerr QNM frequencies for l=2, n=0",
+                    "tool": "kerr_qnm",
+                    "params": {"l": 2, "n": 0, "M": 1.0, "a": 0.5},
+                    "assumptions": ["Kerr black hole"],
+                })
+            else:
+                hypotheses.append({
+                    "prediction": "Schwarzschild QNM ω for l=2, n=0, M=1",
+                    "tool": "schwarzschild_qnm",
+                    "params": {"l": 2, "n": 0, "M": 1.0},
+                    "assumptions": ["Schwarzschild black hole"],
+                })
+
         else:
             hypotheses.append({
                 "prediction": "Computing the requested quantity",

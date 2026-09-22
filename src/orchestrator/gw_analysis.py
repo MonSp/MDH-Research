@@ -103,8 +103,13 @@ def fisher_matrix(
     # Numerical derivatives
     derivatives = []
     for i, (p, dp) in enumerate(zip(params, delta.values())):
-        p_plus = p * (1 + dp)
-        p_minus = p * (1 - dp)
+        if p == 0:
+            # Fractional step vanishes at 0 (e.g. default t_c/phi_c); use absolute step.
+            step = abs(dp) if abs(dp) > 0 else 1e-6
+            p_plus, p_minus = step, -step
+        else:
+            p_plus = p * (1 + dp)
+            p_minus = p * (1 - dp)
 
         params_plus = list(params)
         params_minus = list(params)
@@ -139,10 +144,15 @@ def fisher_matrix(
     for i, name in enumerate(param_names):
         uncertainties[name] = np.sqrt(abs(cov[i, i])) if np.isfinite(cov[i, i]) else np.inf
 
-    # Correlation matrix
-    diag = np.sqrt(np.abs(np.diag(cov)))
-    diag[diag == 0] = 1
-    corr = cov / np.outer(diag, diag)
+    # Correlation matrix (guard singular Fisher → inf covariance)
+    if np.all(np.isfinite(cov)):
+        diag = np.sqrt(np.abs(np.diag(cov)))
+        diag[diag == 0] = 1
+        with np.errstate(invalid="ignore", divide="ignore"):
+            corr = cov / np.outer(diag, diag)
+        corr = np.nan_to_num(corr, nan=0.0, posinf=0.0, neginf=0.0)
+    else:
+        corr = np.full((n_params, n_params), np.nan)
 
     try:
         cond = np.linalg.cond(Gamma)
