@@ -267,8 +267,23 @@ def cmd_checkpoint(args: argparse.Namespace) -> int:
 
 def cmd_capmap(args: argparse.Namespace) -> int:
     _ensure_paths()
-    from .capability_map import capability_summary, render_capability_map
+    from .capability_map import capability_summary, render_capability_map, sync_readme
+    import os
 
+    if args.write_readme:
+        root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
+        written = []
+        for name in ("README.md", "README_en.md"):
+            p = os.path.join(root, name)
+            if os.path.isfile(p):
+                sync_readme(p)
+                written.append(name)
+        summary = capability_summary()
+        if args.json:
+            _print_json({"written": written, "summary": summary})
+        else:
+            print(f"updated {', '.join(written)}  ({summary['n_ok']}/{summary['n_rows']} OK)")
+        return 0
     if args.json:
         _print_json(capability_summary())
     else:
@@ -359,8 +374,12 @@ def build_parser() -> argparse.ArgumentParser:
     ckpt.add_argument("--llm", choices=("auto", "on", "off"), default="off")
     ckpt.set_defaults(func=cmd_checkpoint)
 
-    cap = sub.add_parser("capmap", help="Emit L0–L24 platform capability map")
+    cap = sub.add_parser("capmap", help="Emit platform capability map")
     cap.add_argument("--json", action="store_true")
+    cap.add_argument(
+        "--write-readme", action="store_true",
+        help="Sync capability table into README.md / README_en.md markers",
+    )
     cap.set_defaults(func=cmd_capmap)
 
     return p

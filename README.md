@@ -153,7 +153,8 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L22 基准扩展** | 黄金 suite 扩至 10 题（Kretschmann/蒸发/QNM/chirp 等） | ✅ |
 | **L23 检查点快照** | run/campaign 结论 JSON 落盘；`cli checkpoint save|list|show` | ✅ |
 | **L24 API 检查点** | HTTP `/checkpoint` `/checkpoint/list` `/checkpoint/show` | ✅ |
-| **L25 能力地图** | 内省 L0–L24 状态并生成 markdown/JSON；`cli capmap` | ✅ |
+| **L25 能力地图** | 内省 L0–L26 状态并生成 markdown/JSON；`cli capmap` | ✅ |
+| **L26 能力表同步** | `cli capmap --write-readme` 将内省表写入 README 标记区 | ✅ |
 
 ### 计算 / 推理 / 验证
 
@@ -332,3 +333,40 @@ ResearchLoop → ResearchJournal → Skill Manifests → AgentKernelBridge
 ## License
 
 Apache 2.0
+
+## Auto Capability Map
+
+<!-- capability-map:begin -->
+| Level | Name | Status |
+|-------|------|--------|
+| L0 | Compute library | ✅ |
+| L1 | Agent tool surface | ✅ |
+| L2 | Experiment ledger | ✅ |
+| L3 | Multi-step orchestration | ✅ |
+| L4 | Verification | ✅ |
+| L4b | Parameter sweep | ✅ |
+| L4c | Failure replan | ✅ |
+| L5 | Agent foundations | ✅ |
+| L6 | Hypothesis competition | ✅ |
+| L7 | Multi-round iterate | ✅ |
+| L8 | Known-value gate | ✅ |
+| L9 | Research campaign | ✅ |
+| L10 | Research report | ✅ |
+| L11 | Journal analytics | ✅ |
+| L12 | CLI facade | ✅ |
+| L13 | Golden benchmark | ✅ |
+| L14 | Hypothesis memory | ✅ |
+| L15 | Platform integration | ✅ |
+| L16-17 | CI harden | ✅ |
+| L18 | Known-value catalog | ✅ |
+| L19 | HTTP API | ✅ |
+| L20 | Campaign trend | ✅ |
+| L21 | API trend/report | ✅ |
+| L22 | Bench expansion | ✅ |
+| L23 | Checkpoint snapshots | ✅ |
+| L24 | API checkpoints | ✅ |
+| L25 | Capability map | ✅ |
+| L26 | Capmap README sync | ✅ |
+
+_内省：**28/28** OK · `cli capmap`_
+<!-- capability-map:end -->
