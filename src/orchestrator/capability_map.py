@@ -186,6 +186,18 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L28", "API capmap + CI fastapi",
         "ok" if has_fastapi_wf else "partial",
         "GET /capmap; workflow fastapi")
+    ps_mod = _try_import("param_sweep")
+    rl_mod = _try_import("research_loop")
+    has_grid = (
+        ps_mod is not None
+        and hasattr(ps_mod, "expand_grid")
+        and hasattr(ps_mod, "summarize_grid")
+        and rl_mod is not None
+        and hasattr(getattr(rl_mod, "ResearchLoop", None), "_run_grid_hypothesis")
+    )
+    row("L29", "2D grid sweep",
+        "ok" if has_grid else "missing",
+        "expand_grid/summarize_grid; sweep.grid path")
     return rows
 
 

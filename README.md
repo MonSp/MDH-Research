@@ -157,6 +157,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L26 能力表同步** | `cli capmap --write-readme` 将内省表写入 README 标记区 | ✅ |
 | **L27 能力表 CI 门禁** | `capmap --check-readme` + golden-bench 步骤，README 漂移则 fail | ✅ |
 | **L28 API 能力地图** | HTTP `/capmap` `/capmap/check-readme`；CI 安装 fastapi 修 `create_app` 测试 | ✅ |
+| **L29 二维网格扫描** | `sweep.grid` 双轴笛卡尔积（≤16 格）+ 沿 x 单调性摘要 | ✅ |
 
 ### 计算 / 推理 / 验证
 
@@ -371,6 +372,7 @@ Apache 2.0
 | L26 | Capmap README sync | ✅ |
 | L27 | Capmap CI gate | ✅ |
 | L28 | API capmap + CI fastapi | ✅ |
+| L29 | 2D grid sweep | ✅ |
 
-_内省：**30/30** OK · `cli capmap`_
+_内省：**31/31** OK · `cli capmap`_
 <!-- capability-map:end -->
