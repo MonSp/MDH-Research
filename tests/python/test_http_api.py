@@ -88,6 +88,10 @@ class TestAPI:
 
 class TestCreateApp:
     def test_create_app_importable(self):
+        try:
+            import fastapi  # noqa: F401
+        except ImportError:
+            pytest.skip("fastapi not installed")
         from orchestrator.api import create_app
 
         app = create_app()

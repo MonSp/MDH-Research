@@ -176,6 +176,16 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L27", "Capmap CI gate",
         "ok" if has_check else "missing",
         "workflow capmap --check-readme")
+    has_fastapi_wf = False
+    if os.path.isfile(wf):
+        try:
+            with open(wf, encoding="utf-8") as f:
+                has_fastapi_wf = "fastapi" in f.read()
+        except OSError:
+            pass
+    row("L28", "API capmap + CI fastapi",
+        "ok" if has_fastapi_wf else "partial",
+        "GET /capmap; workflow fastapi")
     return rows
 
 
