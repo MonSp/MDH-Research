@@ -369,6 +369,7 @@ Apache 2.0
 | L25 | Capability map | ✅ |
 | L26 | Capmap README sync | ✅ |
 | L27 | Capmap CI gate | ✅ |
+| L28 | API capmap + CI fastapi | ✅ |
 
-_内省：**29/29** OK · `cli capmap`_
+_内省：**30/30** OK · `cli capmap`_
 <!-- capability-map:end -->
