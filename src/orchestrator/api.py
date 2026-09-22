@@ -192,6 +192,28 @@ def create_app() -> Any:
         ckpt = load_checkpoint(path)
         return {"checkpoint": ckpt, "markdown": render_checkpoint(ckpt)}
 
+    @app.get("/capmap")
+    def capmap():
+        from .capability_map import capability_summary, render_capability_map
+
+        return {
+            "summary": capability_summary(),
+            "markdown": render_capability_map(),
+        }
+
+    @app.get("/capmap/check-readme")
+    def capmap_check_readme():
+        from .capability_map import readme_capability_synced
+        import os as _os
+
+        root = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "..")
+        stale = []
+        for name in ("README.md", "README_en.md"):
+            p = _os.path.join(root, name)
+            if _os.path.isfile(p) and not readme_capability_synced(p):
+                stale.append(name)
+        return {"in_sync": not stale, "stale": stale}
+
     return app
 
 

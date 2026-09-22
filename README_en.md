@@ -155,6 +155,7 @@ Grounded in code and evals, not vision slides:
 | **L25 Capability map** | Introspect L0–L27 status to markdown/JSON; `cli capmap` | ✅ |
 | **L26 Capmap README sync** | `cli capmap --write-readme` embeds introspected table in README markers | ✅ |
 | **L27 Capmap CI gate** | `capmap --check-readme` + golden-bench step; fails on README drift | ✅ |
+| **L28 API capmap** | HTTP `/capmap` `/capmap/check-readme`; CI installs fastapi for `create_app` test | ✅ |
 
 ### Compute / reason / verify
 

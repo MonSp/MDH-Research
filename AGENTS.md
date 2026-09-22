@@ -119,6 +119,7 @@ research/
 - **能力地图（L25）**：`capability_map.detect_capabilities` 内省模块/CLI/文件；`cli capmap [--json]` 输出 L0–L27 状态表
 - **能力表同步（L26）**：`cli capmap --write-readme` 用 `capability-map:begin/end` 标记刷新 README/README_en
 - **能力表 CI 门禁（L27）**：`cli capmap --check-readme` 不一致 exit 1；golden-bench workflow 含该步骤
+- **API 能力地图（L28）**：GET `/capmap`、`/capmap/check-readme`；workflow 安装 `fastapi uvicorn`；`create_app` 测试缺 fastapi 时 skip
 
 ## 与大荒界生态的关系
 

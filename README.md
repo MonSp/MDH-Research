@@ -156,6 +156,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L25 能力地图** | 内省 L0–L27 状态并生成 markdown/JSON；`cli capmap` | ✅ |
 | **L26 能力表同步** | `cli capmap --write-readme` 将内省表写入 README 标记区 | ✅ |
 | **L27 能力表 CI 门禁** | `capmap --check-readme` + golden-bench 步骤，README 漂移则 fail | ✅ |
+| **L28 API 能力地图** | HTTP `/capmap` `/capmap/check-readme`；CI 安装 fastapi 修 `create_app` 测试 | ✅ |
 
 ### 计算 / 推理 / 验证
 
