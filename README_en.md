@@ -159,6 +159,7 @@ Grounded in code and evals, not vision slides:
 | **L29 2D grid sweep** | `sweep.grid` Cartesian product (≤16 cells) + monotonicity along x | ✅ |
 | **L30 Sweep visualization** | `sweep_viz`: sparkline + text tables + CSV; report embeds sweep/grid viz | ✅ |
 | **L31 Sweep export** | `cli run --csv` + API `POST /viz`; `export_run_csv` to disk/response | ✅ |
+| **L32 Sweep sensitivity** | Elasticity ε=d ln y/d ln x; grid dominant-axis rank; SENS in report | ✅ |
 
 ### Compute / reason / verify
 
@@ -376,6 +377,7 @@ Apache 2.0
 | L29 | 2D grid sweep | ✅ |
 | L30 | Sweep visualization | ✅ |
 | L31 | Sweep export (CLI/API) | ✅ |
+| L32 | Sweep sensitivity | ✅ |
 
-_内省：**33/33** OK · `cli capmap`_
+_内省：**34/34** OK · `cli capmap`_
 <!-- capability-map:end -->

@@ -98,7 +98,13 @@ def write_csv(path: str, rows: Iterable[dict], headers: Sequence[str]) -> str:
 
 
 def render_run_sweep_viz(result: dict) -> str:
-    """Viz section for ResearchLoop.run() output: sweep + grid tables."""
+    """Viz section for ResearchLoop.run(): sparkline, tables, sensitivity."""
+    from .param_sweep import (
+        compute_sensitivity,
+        format_sensitivity_sentence,
+        summarize_grid_sensitivity,
+    )
+
     parts: list[str] = []
     for res in result.get("results") or []:
         sw = res.get("sweep") or {}
@@ -106,10 +112,19 @@ def render_run_sweep_viz(result: dict) -> str:
             pts = [p.get("y") for p in sw["points"] if "y" in p]
             sl = sparkline(pts)
             table = render_trend_table(sw)
-            if sl or table:
+            xs = [p.get("x") for p in sw["points"] if "y" in p]
+            sens = compute_sensitivity(
+                [x for x in xs if isinstance(x, (int, float))],
+                [y for y in pts if isinstance(y, (int, float))],
+            )
+            sens_line = format_sensitivity_sentence(
+                str(sw.get("axis_name") or "x"), sens
+            )
+            if sl or table or sens_line:
                 parts.append("### Sweep viz\n")
                 if sl:
                     parts.append(f"`{sl}`\n")
+                parts.append(f"Sensitivity: {sens_line}\n")
                 if table:
                     parts.append(table + "\n")
         g = res.get("grid") or {}
@@ -117,6 +132,18 @@ def render_run_sweep_viz(result: dict) -> str:
         if table_g:
             parts.append("### Grid viz\n")
             parts.append("```\n" + table_g + "\n```\n")
+            gs = summarize_grid_sensitivity(g)
+            if gs.get("n"):
+                ex = gs.get("elasticity_x")
+                ey = gs.get("elasticity_y")
+                dom = gs.get("dominant_axis")
+                parts.append(
+                    "Sensitivity: ε_x="
+                    + (f"{ex:.3g}" if ex is not None else "n/a")
+                    + " ε_y="
+                    + (f"{ey:.3g}" if ey is not None else "n/a")
+                    + f" dominant={dom}\n"
+                )
     return "\n".join(parts)
 
 def export_run_csv(result: dict, path: str) -> str | None:

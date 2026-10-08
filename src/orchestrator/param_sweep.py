@@ -322,3 +322,148 @@ def format_grid_sentence(grid: dict, extract_key: str | None = None) -> str:
         f"{grid.get('direction_along_x')} along x "
         f"(n={grid['n']}, z={grid['z_min']:.6g}…{grid['z_max']:.6g})"
     )
+
+def compute_sensitivity(
+    xs: list[float],
+    ys: list[float],
+) -> dict[str, Any]:
+    """Elasticity ε = d ln y / d ln x for a 1D sweep.
+
+    Overall ε is the log-log OLS slope on positive pairs. Local ε for
+    consecutive positive pairs give median/max |ε| (shape robustness).
+    """
+    pairs = [
+        (float(x), float(y)) for x, y in zip(xs, ys)
+        if math.isfinite(float(x)) and math.isfinite(float(y))
+    ]
+    if not pairs:
+        return {
+            "n": 0,
+            "elasticity": None,
+            "local_elasticities": [],
+            "median_abs_local": None,
+            "max_abs_local": None,
+        }
+
+    pos = [(x, y) for x, y in pairs if x > 0 and y > 0]
+    elasticity = _log_log_slope(
+        [p[0] for p in pos], [p[1] for p in pos]
+    ) if len(pos) >= 2 else None
+
+    locals_: list[float] = []
+    for (x1, y1), (x2, y2) in zip(pos, pos[1:]):
+        if x1 == x2 or y1 == y2:
+            continue
+        eps = math.log(y2 / y1) / math.log(x2 / x1)
+        if math.isfinite(eps):
+            locals_.append(eps)
+
+    median_abs = None
+    max_abs = None
+    if locals_:
+        ordered = sorted(abs(e) for e in locals_)
+        n = len(ordered)
+        mid = n // 2
+        median_abs = (
+            ordered[mid] if n % 2
+            else (ordered[mid - 1] + ordered[mid]) / 2
+        )
+        max_abs = ordered[-1]
+
+    return {
+        "n": len(pairs),
+        "elasticity": elasticity,
+        "local_elasticities": locals_,
+        "median_abs_local": median_abs,
+        "max_abs_local": max_abs,
+    }
+
+
+def summarize_grid_sensitivity(grid: dict[str, Any]) -> dict[str, Any]:
+    """Per-axis elasticity for a 2D grid; which axis dominates z."""
+    cells = [
+        c for c in (grid or {}).get("cells") or []
+        if c.get("z") is not None
+        and math.isfinite(float(c.get("x", float("nan"))))
+        and math.isfinite(float(c.get("y", float("nan"))))
+        and math.isfinite(float(c["z"]))
+    ]
+    if not cells:
+        return {
+            "n": 0,
+            "elasticity_x": None,
+            "elasticity_y": None,
+            "dominant_axis": None,
+        }
+
+    xs = sorted({float(c["x"]) for c in cells})
+    ys = sorted({float(c["y"]) for c in cells})
+    lookup = {
+        (float(c["x"]), float(c["y"])): float(c["z"]) for c in cells
+    }
+
+    def _row_eps(axis: str) -> float | None:
+        slopes: list[float] = []
+        if axis == "x":
+            for y in ys:
+                pts = sorted(
+                    (x, lookup[(x, y)]) for x in xs if (x, y) in lookup
+                )
+                sl = _log_log_slope(
+                    [p[0] for p in pts], [p[1] for p in pts]
+                )
+                if sl is not None:
+                    slopes.append(sl)
+        else:
+            for x in xs:
+                pts = sorted(
+                    (y, lookup[(x, y)]) for y in ys if (x, y) in lookup
+                )
+                sl = _log_log_slope(
+                    [p[0] for p in pts], [p[1] for p in pts]
+                )
+                if sl is not None:
+                    slopes.append(sl)
+        if not slopes:
+            return None
+        return sum(slopes) / len(slopes)
+
+    ex = _row_eps("x")
+    ey = _row_eps("y")
+    dominant = None
+    if ex is not None and ey is not None:
+        ax, ay = abs(ex), abs(ey)
+        eps = 1e-9 * max(ax, ay, 1.0)
+        if ax > ay + eps:
+            dominant = "x"
+        elif ay > ax + eps:
+            dominant = "y"
+        else:
+            dominant = "tie"
+    elif ex is not None:
+        dominant = "x"
+    elif ey is not None:
+        dominant = "y"
+
+    return {
+        "n": len(cells),
+        "elasticity_x": ex,
+        "elasticity_y": ey,
+        "dominant_axis": dominant,
+    }
+
+
+def format_sensitivity_sentence(axis_name: str, sens: dict[str, Any]) -> str:
+    key = axis_name or "x"
+    if not sens or sens.get("n", 0) == 0:
+        return f"SENS: no samples for {key}"
+    eps = sens.get("elasticity")
+    if eps is None:
+        med = sens.get("median_abs_local")
+        med_s = f"{med:.3g}" if med is not None else "n/a"
+        return f"SENS: elasticity {key} n/a (median |ε_local|={med_s}, n={sens['n']})"
+    return (
+        f"SENS: ε={eps:.3g} for {key} "
+        f"(d ln y / d ln x, n={sens['n']})"
+    )
+

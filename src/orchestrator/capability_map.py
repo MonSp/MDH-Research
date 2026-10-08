@@ -228,6 +228,14 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L31", "Sweep export (CLI/API)",
         "ok" if (has_export and has_cli_csv and has_api_viz) else "missing",
         "cli run --csv; POST /viz; export_run_csv")
+    has_sens = (
+        ps_mod is not None
+        and hasattr(ps_mod, "compute_sensitivity")
+        and hasattr(ps_mod, "summarize_grid_sensitivity")
+    )
+    row("L32", "Sweep sensitivity",
+        "ok" if has_sens else "missing",
+        "compute_sensitivity ε; grid axis rank; report hook")
     return rows
 
 
