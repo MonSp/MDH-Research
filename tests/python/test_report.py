@@ -98,3 +98,39 @@ class TestRenderCampaign:
         md = render_single_run(result)
         assert "Question" in md
         assert "Verdict" in md
+
+
+class TestSweepVizInReport:
+    def test_report_includes_sweep_viz(self):
+        result = {
+            "question": "How does T vary with M?",
+            "conclusion": {"verdict": "Hypotheses verified", "evidence": []},
+            "results": [{
+                "success": True,
+                "sweep": {
+                    "axis_name": "M",
+                    "points": [{"x": 1.0, "y": 1.0}, {"x": 2.0, "y": 2.0}],
+                    "trend": {"direction": "increasing", "n": 2,
+                              "points": [{"x": 1.0, "y": 1.0},
+                                         {"x": 2.0, "y": 2.0}]},
+                },
+            }],
+        }
+        md = render_single_run(result)
+        assert "Sweep viz" in md
+
+    def test_report_includes_grid_viz(self):
+        result = {
+            "question": "grid",
+            "conclusion": {"verdict": "Hypotheses verified", "evidence": []},
+            "results": [{
+                "success": True,
+                "grid": {
+                    "n": 1,
+                    "x_name": "M", "y_name": "b",
+                    "cells": [{"x": 1.0, "y": 1.0, "z": 5.0}],
+                },
+            }],
+        }
+        md = render_single_run(result)
+        assert "Grid viz" in md

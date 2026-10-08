@@ -157,6 +157,7 @@ Grounded in code and evals, not vision slides:
 | **L27 Capmap CI gate** | `capmap --check-readme` + golden-bench step; fails on README drift | ✅ |
 | **L28 API capmap** | HTTP `/capmap` `/capmap/check-readme`; CI installs fastapi for `create_app` test | ✅ |
 | **L29 2D grid sweep** | `sweep.grid` Cartesian product (≤16 cells) + monotonicity along x | ✅ |
+| **L30 Sweep visualization** | `sweep_viz`: sparkline + text tables + CSV; report embeds sweep/grid viz | ✅ |
 
 ### Compute / reason / verify
 
@@ -372,6 +373,7 @@ Apache 2.0
 | L27 | Capmap CI gate | ✅ |
 | L28 | API capmap + CI fastapi | ✅ |
 | L29 | 2D grid sweep | ✅ |
+| L30 | Sweep visualization | ✅ |
 
-_内省：**31/31** OK · `cli capmap`_
+_内省：**32/32** OK · `cli capmap`_
 <!-- capability-map:end -->
