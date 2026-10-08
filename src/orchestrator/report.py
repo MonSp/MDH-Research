@@ -167,6 +167,7 @@ def render_campaign(campaign: dict) -> str:
         # synthesize a pseudo run-result for reuse
         pseudo = {
             "question": q.get("question"),
+            "results": q.get("results") or [],
             "conclusion": {
                 "verdict": q.get("verdict"),
                 "evidence": q.get("evidence"),

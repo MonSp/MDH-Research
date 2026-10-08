@@ -96,6 +96,16 @@ def run_campaign(
         try:
             out = loop.run(q)
             c = out.get("conclusion") or {}
+            # slim sweep/grid slices so report viz + CSV export work
+            slim = []
+            for r in out.get("results") or []:
+                piece = {}
+                if r.get("sweep"):
+                    piece["sweep"] = r["sweep"]
+                if r.get("grid"):
+                    piece["grid"] = r["grid"]
+                if piece:
+                    slim.append(piece)
             question_results.append({
                 "index": i,
                 "question": q,
@@ -108,6 +118,7 @@ def run_campaign(
                 "best_hypothesis": c.get("best_hypothesis"),
                 "evidence": c.get("evidence"),
                 "n_results": len(out.get("results") or []),
+                "results": slim,
             })
         except Exception as e:
             question_results.append({

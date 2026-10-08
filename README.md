@@ -161,6 +161,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L30 扫描可视化** | `sweep_viz`：sparkline + 文本表 + CSV；报告内嵌 sweep/grid 可视化 | ✅ |
 | **L31 扫描导出** | `cli run --csv` + API `POST /viz`；`export_run_csv` 落盘/回传 | ✅ |
 | **L32 扫描灵敏度** | 弹性 ε=d ln y/d ln x；网格主轴排序；报告附 SENS | ✅ |
+| **L33 战役扫描结果** | campaign 保留 sweep/grid 切片；战役报告可视化 + 可导出 | ✅ |
 
 ### 计算 / 推理 / 验证
 
@@ -379,6 +380,7 @@ Apache 2.0
 | L30 | Sweep visualization | ✅ |
 | L31 | Sweep export (CLI/API) | ✅ |
 | L32 | Sweep sensitivity | ✅ |
+| L33 | Campaign sweep results | ✅ |
 
-_内省：**34/34** OK · `cli capmap`_
+_内省：**35/35** OK · `cli capmap`_
 <!-- capability-map:end -->
