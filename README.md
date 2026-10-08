@@ -159,6 +159,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L28 API 能力地图** | HTTP `/capmap` `/capmap/check-readme`；CI 安装 fastapi 修 `create_app` 测试 | ✅ |
 | **L29 二维网格扫描** | `sweep.grid` 双轴笛卡尔积（≤16 格）+ 沿 x 单调性摘要 | ✅ |
 | **L30 扫描可视化** | `sweep_viz`：sparkline + 文本表 + CSV；报告内嵌 sweep/grid 可视化 | ✅ |
+| **L31 扫描导出** | `cli run --csv` + API `POST /viz`；`export_run_csv` 落盘/回传 | ✅ |
 
 ### 计算 / 推理 / 验证
 
@@ -375,6 +376,7 @@ Apache 2.0
 | L28 | API capmap + CI fastapi | ✅ |
 | L29 | 2D grid sweep | ✅ |
 | L30 | Sweep visualization | ✅ |
+| L31 | Sweep export (CLI/API) | ✅ |
 
-_内省：**32/32** OK · `cli capmap`_
+_内省：**33/33** OK · `cli capmap`_
 <!-- capability-map:end -->

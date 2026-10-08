@@ -208,6 +208,26 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L30", "Sweep visualization",
         "ok" if has_viz else "missing",
         "sweep_viz sparkline/table/csv; report hook")
+    has_export = sv_mod is not None and hasattr(sv_mod, "export_run_csv")
+    cli_src = ""
+    api_src = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "cli.py"),
+                  encoding="utf-8") as f:
+            cli_src = f.read()
+    except OSError:
+        pass
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "api.py"),
+                  encoding="utf-8") as f:
+            api_src = f.read()
+    except OSError:
+        pass
+    has_cli_csv = "--csv" in cli_src
+    has_api_viz = '"/viz"' in api_src
+    row("L31", "Sweep export (CLI/API)",
+        "ok" if (has_export and has_cli_csv and has_api_viz) else "missing",
+        "cli run --csv; POST /viz; export_run_csv")
     return rows
 
 

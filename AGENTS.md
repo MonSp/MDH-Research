@@ -96,6 +96,7 @@ research/
 - **参数扫描**：hypothesis 可带 `sweep`（axis values 或 start/stop/n/log；extract dict key；链式 inject）。单点失败不中断；有限样本 < 2 则失败；MAX 12 点；Expression 在参考点 evaluate
 - **二维网格扫描（L29）**：`sweep.grid = {x, y}` + `sweep.tool`；`expand_grid` 笛卡尔积上限 16 格；`summarize_grid` 报 n/z 范围与沿 x 单调性；`_run_grid_hypothesis` 每格调用工具并 journal `grid:<tool>`
 - **扫描可视化（L30）**：`sweep_viz.sparkline/render_trend_table/render_grid_table/write_csv`；`report.render_single_run` 在有 sweep/grid 时追加可视化；纯文本（无 matplotlib）
+- **扫描导出（L31）**：`sweep_viz.export_run_csv`；`cli run --csv PATH` 落盘；`POST /viz` 返回 markdown+csv
 - **失败重规划**：`replan.diagnose_failure` + `heuristic_repair`；缺 metric 前置 factory / 注入 diagonal；缺参填默认；同义词与坏 kwargs 修复；journal note 记 `REPLAN(...)`；不可修则保持失败
 - **智能体数学基础**：`agent_math.py` 研究轨迹 Shannon 熵 / decision pressure / MetricStore 状态 L2 距离 / sweep 信息量；`conclusion.foundations` 附带 run 级过程指标
 - **假设排序**：`score_hypothesis` / `rank_hypotheses`；`conclusion.hypothesis_ranking` + `best_hypothesis`；journal conclusion 带 foundations/ranking extra
@@ -124,6 +125,7 @@ research/
 - **API 能力地图（L28）**：GET `/capmap`、`/capmap/check-readme`；workflow 安装 `fastapi uvicorn`；`create_app` 测试缺 fastapi 时 skip
 - **二维网格扫描（L29）**：`param_sweep.expand_grid`/`summarize_grid`；`ResearchLoop._run_grid_hypothesis` 处理 `sweep.grid`；证据路径同 sweep（`grid.n>=1`）
 - **扫描可视化（L30）**：`sweep_viz` 模块（sparkline/表/CSV）+ report 挂钩；`capmap` L30 行
+- **扫描导出（L31）**：`export_run_csv` + `cli run --csv` + API `POST /viz`；`capmap` L31 行
 
 ## 与大荒界生态的关系
 
