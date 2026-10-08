@@ -64,6 +64,11 @@ def create_app() -> Any:
         output: Optional[str] = None
         markdown: bool = True
 
+    class VizRequest(BaseModel):
+        question: str
+        llm: Optional[bool] = False
+        memory_path: Optional[str] = None
+
     @app.get("/health")
     def health():
         from .tool_registry import registry_summary
@@ -128,6 +133,36 @@ def create_app() -> Any:
             write_report(md, req.output)
             return {"path": req.output, "written": True}
         return {"markdown": md}
+
+    @app.post("/viz")
+    def viz(req: VizRequest):
+        if not req.question:
+            raise HTTPException(status_code=400, detail="question required")
+        from .sweep_viz import render_run_sweep_viz, export_run_csv
+        import io as _io
+
+        loop = _make_loop(llm=req.llm, memory_path=req.memory_path)
+        result = loop.run(req.question)
+        markdown = render_run_sweep_viz(result)
+        csv_text = ""
+        # export_run_csv needs a path; build in-memory via temp then read
+        import tempfile as _tf
+        with _tf.NamedTemporaryFile("w+", suffix=".csv", delete=False) as fh:
+            tmp_path = fh.name
+        try:
+            if export_run_csv(result, tmp_path):
+                with open(tmp_path, encoding="utf-8") as fh:
+                    csv_text = fh.read()
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+        return {
+            "markdown": markdown,
+            "csv": csv_text,
+            "verdict": (result.get("conclusion") or {}).get("verdict"),
+        }
 
     @app.get("/analytics")
     def analytics(journal_dir: str):

@@ -158,6 +158,7 @@ Grounded in code and evals, not vision slides:
 | **L28 API capmap** | HTTP `/capmap` `/capmap/check-readme`; CI installs fastapi for `create_app` test | ✅ |
 | **L29 2D grid sweep** | `sweep.grid` Cartesian product (≤16 cells) + monotonicity along x | ✅ |
 | **L30 Sweep visualization** | `sweep_viz`: sparkline + text tables + CSV; report embeds sweep/grid viz | ✅ |
+| **L31 Sweep export** | `cli run --csv` + API `POST /viz`; `export_run_csv` to disk/response | ✅ |
 
 ### Compute / reason / verify
 
@@ -374,6 +375,7 @@ Apache 2.0
 | L28 | API capmap + CI fastapi | ✅ |
 | L29 | 2D grid sweep | ✅ |
 | L30 | Sweep visualization | ✅ |
+| L31 | Sweep export (CLI/API) | ✅ |
 
-_内省：**32/32** OK · `cli capmap`_
+_内省：**33/33** OK · `cli capmap`_
 <!-- capability-map:end -->

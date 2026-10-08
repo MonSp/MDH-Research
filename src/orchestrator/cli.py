@@ -49,6 +49,14 @@ def cmd_run(args: argparse.Namespace) -> int:
     llm = None if args.llm == "auto" else (args.llm == "on")
     loop = _make_loop(args.log_dir, llm, memory_path=args.memory)
     result = loop.run(args.question)
+    if getattr(args, "csv", None):
+        from .sweep_viz import export_run_csv
+
+        written = export_run_csv(result, args.csv)
+        if written:
+            print(f"wrote {written}", file=sys.stderr)
+        else:
+            print("no sweep/grid rows to export", file=sys.stderr)
     if args.json:
         _print_json(result.get("conclusion"))
     else:
@@ -330,6 +338,10 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--memory", default=None,
         help="Enable hypothesis memory at PATH (opt-in)",
+    )
+    run.add_argument(
+        "--csv", default=None,
+        help="Export sweep/grid points from this run to CSV path",
     )
     add_llm(run)
     run.set_defaults(func=cmd_run)

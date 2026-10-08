@@ -118,3 +118,44 @@ def render_run_sweep_viz(result: dict) -> str:
             parts.append("### Grid viz\n")
             parts.append("```\n" + table_g + "\n```\n")
     return "\n".join(parts)
+
+def export_run_csv(result: dict, path: str) -> str | None:
+    """Write first available sweep/grid rows from a run result to CSV.
+
+    Prefers grid cells (x,y,z); falls back to sweep points (x,y).
+    Returns path, or None if the result carries no plottable rows.
+    """
+    grid_rows: list[dict] = []
+    sweep_rows: list[dict] = []
+    for res in result.get("results") or []:
+        g = res.get("grid") or {}
+        cells = [
+            c for c in (g.get("cells") or [])
+            if c.get("z") is not None
+            and isinstance(c.get("x"), (int, float))
+            and isinstance(c.get("y"), (int, float))
+            and math.isfinite(float(c["z"]))
+        ]
+        if cells and not grid_rows:
+            grid_rows = [
+                {"x": float(c["x"]), "y": float(c["y"]), "z": float(c["z"])}
+                for c in cells
+            ]
+        sw = res.get("sweep") or {}
+        pts = [
+            p for p in (sw.get("points") or [])
+            if "y" in p and isinstance(p.get("x"), (int, float))
+            and isinstance(p.get("y"), (int, float))
+            and math.isfinite(float(p["y"]))
+        ]
+        if pts and not sweep_rows:
+            sweep_rows = [
+                {"x": float(p["x"]), "y": float(p["y"])} for p in pts
+            ]
+
+    if grid_rows:
+        return write_csv(path, grid_rows, headers=("x", "y", "z"))
+    if sweep_rows:
+        return write_csv(path, sweep_rows, headers=("x", "y"))
+    return None
+
