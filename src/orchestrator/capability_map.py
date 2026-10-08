@@ -236,6 +236,17 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L32", "Sweep sensitivity",
         "ok" if has_sens else "missing",
         "compute_sensitivity ε; grid axis rank; report hook")
+    camp_src = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "campaign.py"),
+                  encoding="utf-8") as f:
+            camp_src = f.read()
+    except OSError:
+        pass
+    has_camp_results = '"results": slim' in camp_src
+    row("L33", "Campaign sweep results",
+        "ok" if has_camp_results else "missing",
+        "campaign keeps slim sweep/grid; report+CSV")
     return rows
 
 
