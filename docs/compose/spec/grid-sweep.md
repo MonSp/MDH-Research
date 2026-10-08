@@ -1,8 +1,9 @@
 ---
 feature: grid-sweep
-status: in-progress
+status: delivered
 updated: 2026-09-22
 branch: feat/multi-sweep
+commits: 870e42c..4dc56ff
 ---
 
 # L29: 2D Grid Parameter Sweep
@@ -27,4 +28,4 @@ campaigns can explore interactions between two parameters (e.g. lensing M×b).
 - [x] `_run_grid_hypothesis` + analysis evidence path
 - [x] tests (`tests/python/test_grid_sweep.py`, 7 cases)
 - [x] README/AGENTS/capability row L29
-- [ ] full pytest + PR
+- [x] full pytest + PR

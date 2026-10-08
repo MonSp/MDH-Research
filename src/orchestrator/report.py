@@ -92,6 +92,13 @@ def render_single_run(result: dict) -> str:
             f"iterate_rounds={c.get('iterate_rounds') or 0}"
         )
 
+    # L30: sweep/grid visualization (sparkline + tables) when present
+    from .sweep_viz import render_run_sweep_viz
+
+    viz = render_run_sweep_viz(result)
+    if viz:
+        lines.append("\n" + viz.rstrip())
+
     return "\n".join(lines) + "\n"
 
 

@@ -198,6 +198,16 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L29", "2D grid sweep",
         "ok" if has_grid else "missing",
         "expand_grid/summarize_grid; sweep.grid path")
+    sv_mod = _try_import("sweep_viz")
+    has_viz = (
+        sv_mod is not None
+        and hasattr(sv_mod, "sparkline")
+        and hasattr(sv_mod, "render_grid_table")
+        and hasattr(sv_mod, "write_csv")
+    )
+    row("L30", "Sweep visualization",
+        "ok" if has_viz else "missing",
+        "sweep_viz sparkline/table/csv; report hook")
     return rows
 
 
