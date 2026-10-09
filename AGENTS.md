@@ -99,6 +99,7 @@ research/
 - **扫描导出（L31）**：`sweep_viz.export_run_csv`；`cli run --csv PATH` 落盘；`POST /viz` 返回 markdown+csv
 - **扫描灵敏度（L32）**：`param_sweep.compute_sensitivity`（ε=d ln y/d ln x）+ `summarize_grid_sensitivity`（主轴排序）；report/Sweep viz 附 SENS 行
 - **战役扫描结果（L33）**：`run_campaign` 在 question 上保留 slim `results`（仅 sweep/grid）；`render_campaign` 伪 run 可出可视化与 CSV
+- **战役 CSV 导出（L34）**：`cli campaign --csv PATH` 合并各题 results 后 `export_run_csv`；与 `run --csv` 对称
 - **失败重规划**：`replan.diagnose_failure` + `heuristic_repair`；缺 metric 前置 factory / 注入 diagonal；缺参填默认；同义词与坏 kwargs 修复；journal note 记 `REPLAN(...)`；不可修则保持失败
 - **智能体数学基础**：`agent_math.py` 研究轨迹 Shannon 熵 / decision pressure / MetricStore 状态 L2 距离 / sweep 信息量；`conclusion.foundations` 附带 run 级过程指标
 - **假设排序**：`score_hypothesis` / `rank_hypotheses`；`conclusion.hypothesis_ranking` + `best_hypothesis`；journal conclusion 带 foundations/ranking extra
@@ -130,6 +131,7 @@ research/
 - **扫描导出（L31）**：`export_run_csv` + `cli run --csv` + API `POST /viz`；`capmap` L31 行
 - **扫描灵敏度（L32）**：1D 弹性 ε + 网格主轴排序；`capmap` L32 行
 - **战役扫描结果（L33）**：campaign 保留 sweep/grid 切片；`capmap` L33 行
+- **战役 CSV 导出（L34）**：`cli campaign --csv`；`capmap` L34 行
 
 ## 与大荒界生态的关系
 

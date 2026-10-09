@@ -97,6 +97,17 @@ def cmd_campaign(args: argparse.Namespace) -> int:
         share_store=not args.fresh_store,
         stop_on_verified=args.stop_on_verified,
     )
+    if getattr(args, "csv", None):
+        from .sweep_viz import export_run_csv
+
+        merged = {"results": []}
+        for q in out.get("questions") or []:
+            merged["results"].extend(q.get("results") or [])
+        written = export_run_csv(merged, args.csv)
+        if written:
+            print(f"wrote {written}", file=sys.stderr)
+        else:
+            print("no sweep/grid rows to export", file=sys.stderr)
     if args.json:
         _print_json(out.get("summary"))
     else:
@@ -356,6 +367,10 @@ def build_parser() -> argparse.ArgumentParser:
     camp.add_argument(
         "--memory", default=None,
         help="Enable hypothesis memory at PATH (opt-in)",
+    )
+    camp.add_argument(
+        "--csv", default=None,
+        help="Export merged sweep/grid points from campaign to CSV path",
     )
     add_llm(camp)
     camp.set_defaults(func=cmd_campaign)
