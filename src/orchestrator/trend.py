@@ -64,6 +64,8 @@ def compute_trend(summaries: list[dict]) -> dict[str, Any]:
         "n_questions", "n_verified", "verify_rate",
         "known_value_passed", "known_value_total", "known_value_rate",
         "mean_best_score", "n_competed", "n_iterated",
+        # L39: sweep coverage + elasticity (L38 summary fields)
+        "n_sweep_questions", "sweep_rate", "mean_elasticity",
     ]
     first, last = summaries[0], summaries[-1]
     delta = {}
@@ -90,6 +92,8 @@ def compute_trend(summaries: list[dict]) -> dict[str, Any]:
                 "known_value_rate": _get(s, "known_value_rate"),
                 "mean_best_score": _get(s, "mean_best_score"),
                 "n_questions": _get(s, "n_questions"),
+                "sweep_rate": _get(s, "sweep_rate"),
+                "mean_elasticity": _get(s, "mean_elasticity"),
             }
             for s in summaries
         ],
@@ -119,15 +123,16 @@ def render_trend(trend: dict[str, Any]) -> str:
     series = trend.get("series") or []
     if series:
         lines.append("\n## Series\n")
-        lines.append("| file | verify | kv rate | best score | n_q |")
-        lines.append("|------|-------:|--------:|-----------:|----:|")
+        lines.append("| file | verify | kv rate | best score | n_q | sweep | ε |")
+        lines.append("|------|-------:|--------:|-----------:|----:|------:|--:|")
         for s in series:
             def fmt(x):
                 return "—" if x is None else f"{x:.3g}"
             lines.append(
                 f"| {s.get('name')} | {fmt(s.get('verify_rate'))} | "
                 f"{fmt(s.get('known_value_rate'))} | {fmt(s.get('mean_best_score'))} | "
-                f"{fmt(s.get('n_questions'))} |"
+                f"{fmt(s.get('n_questions'))} | {fmt(s.get('sweep_rate'))} | "
+                f"{fmt(s.get('mean_elasticity'))} |"
             )
 
     return "\n".join(lines) + "\n"

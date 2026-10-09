@@ -104,6 +104,7 @@ research/
 - **已知量 ε 门禁（L36）**：`known_values.check_sweep_sensitivity`；hawking sweep 期望 ε≈-1（T∝1/M）；`check_chain` 扫 sweep 点
 - **记忆存扫描链（L37）**：`hypothesis_memory` 存 slim sweep spec + sensitivity；`inject_memory_candidates` 对 sweep 项还原为 `sweep` 假设
 - **战役 ε 汇总（L38）**：`summarize_campaign` 增 `n_sweep_questions`/`sweep_rate`/`mean_elasticity`；战役报告 Program summary 附 mean ε 行
+- **战役级 ε 趋势（L39）**：`trend.compute_trend` delta/series 带 `sweep_rate`/`mean_elasticity`；`render_trend` 表加 sweep/ε 列
 - **失败重规划**：`replan.diagnose_failure` + `heuristic_repair`；缺 metric 前置 factory / 注入 diagonal；缺参填默认；同义词与坏 kwargs 修复；journal note 记 `REPLAN(...)`；不可修则保持失败
 - **智能体数学基础**：`agent_math.py` 研究轨迹 Shannon 熵 / decision pressure / MetricStore 状态 L2 距离 / sweep 信息量；`conclusion.foundations` 附带 run 级过程指标
 - **假设排序**：`score_hypothesis` / `rank_hypotheses`；`conclusion.hypothesis_ranking` + `best_hypothesis`；journal conclusion 带 foundations/ranking extra
@@ -140,6 +141,7 @@ research/
 - **已知量 ε 门禁（L36）**：sweep 弹性 vs 教科书幂律；`capmap` L36 行
 - **记忆存扫描链（L37）**：sweep 假设 recall/inject；`capmap` L37 行
 - **战役 ε 汇总（L38）**：sweep 覆盖率 + 平均弹性；`capmap` L38 行
+- **战役级 ε 趋势（L39）**：跨 campaign ε first→last；`capmap` L39 行
 
 ## 与大荒界生态的关系
 
