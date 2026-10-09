@@ -335,6 +335,20 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L40", "Analyze SENS evidence",
         "ok" if has_sens_ev else "missing",
         "_analyze appends ε evidence for sweeps")
+    ck_src2 = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "checkpoint.py"),
+                  encoding="utf-8") as f:
+            ck_src2 = f.read()
+    except OSError:
+        pass
+    has_camp_ck = (
+        '"questions": slim_qs' in ck_src2
+        and 'ckpt.get("questions")' in ck_src2
+    )
+    row("L41", "Campaign checkpoint sweep",
+        "ok" if has_camp_ck else "missing",
+        "campaign ckpt slim questions; report+CSV")
     return rows
 
 

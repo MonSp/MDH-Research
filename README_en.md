@@ -168,6 +168,7 @@ Grounded in code and evals, not vision slides:
 | **L38 Campaign ε summary** | Summary reports sweep rate + mean elasticity; campaign report line | ✅ |
 | **L39 Cross-campaign ε trend** | Trend reports sweep_rate/mean_elasticity first→last across campaigns | ✅ |
 | **L40 Analyze SENS evidence** | `_analyze` appends `SENS: ε=…` evidence for successful sweeps | ✅ |
+| **L41 Campaign checkpoint sweep results** | Campaign checkpoints store/restore slim question results | ✅ |
 
 ### Compute / reason / verify
 
@@ -394,6 +395,7 @@ Apache 2.0
 | L38 | Campaign sweep ε summary | ✅ |
 | L39 | Cross-campaign ε trend | ✅ |
 | L40 | Analyze SENS evidence | ✅ |
+| L41 | Campaign checkpoint sweep | ✅ |
 
-_内省：**42/42** OK · `cli capmap`_
+_内省：**43/43** OK · `cli capmap`_
 <!-- capability-map:end -->

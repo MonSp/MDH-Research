@@ -35,12 +35,38 @@ def save_checkpoint(
     if kind == "campaign":
         payload_src = result.get("summary") or {}
         questions = result.get("questions")
+        # L41: keep slim question slices (sweep/grid only) for report/CSV
+        slim_qs = []
+        for q in questions or []:
+            slim_results = []
+            for r in q.get("results") or []:
+                piece = {}
+                if r.get("sweep"):
+                    piece["sweep"] = _serialize(r["sweep"])
+                if r.get("grid"):
+                    piece["grid"] = _serialize(r["grid"])
+                if piece:
+                    slim_results.append(piece)
+            slim_qs.append({
+                "index": q.get("index"),
+                "question": q.get("question"),
+                "verdict": q.get("verdict"),
+                "evidence": q.get("evidence"),
+                "known_value_checks": q.get("known_value_checks"),
+                "foundations": q.get("foundations"),
+                "hypothesis_ranking": q.get("hypothesis_ranking"),
+                "best_hypothesis": q.get("best_hypothesis"),
+                "competed": q.get("competed"),
+                "iterate_rounds": q.get("iterate_rounds"),
+                "results": slim_results,
+            })
         checkpoint = {
             "kind": "campaign",
             "label": label,
             "ts": time.time(),
             "summary": _serialize(payload_src),
             "n_questions": len(questions or []),
+            "questions": slim_qs,
         }
     else:
         conclusion = result.get("conclusion") or {}
@@ -117,7 +143,10 @@ def checkpoint_to_run_result(ckpt: dict) -> dict:
     """Convert a saved checkpoint into a pseudo ResearchLoop.run() result
     suitable for report.render_single_run / trend aggregation inputs."""
     if ckpt.get("kind") == "campaign":
-        return {"summary": ckpt.get("summary") or {}, "questions": []}
+        return {
+            "summary": ckpt.get("summary") or {},
+            "questions": ckpt.get("questions") or [],
+        }
     return {
         "question": ckpt.get("question"),
         "results": ckpt.get("results") or [],
