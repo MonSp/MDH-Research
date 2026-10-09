@@ -321,6 +321,20 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L39", "Cross-campaign ε trend",
         "ok" if has_tr_eps else "missing",
         "trend delta+series sweep_rate/mean_elasticity")
+    rl_src = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "research_loop.py"),
+                  encoding="utf-8") as f:
+            rl_src = f.read()
+    except OSError:
+        pass
+    has_sens_ev = (
+        "format_sensitivity_sentence" in rl_src
+        and "compute_sensitivity" in rl_src
+    )
+    row("L40", "Analyze SENS evidence",
+        "ok" if has_sens_ev else "missing",
+        "_analyze appends ε evidence for sweeps")
     return rows
 
 

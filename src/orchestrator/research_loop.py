@@ -1296,6 +1296,26 @@ Example multi-step chain:
             if sw and sw.get("trend") and sw["trend"].get("n", 0) >= 2:
                 evidence.append(sw.get("summary") or str(sw["trend"]))
                 any_confirmed = True
+                # L40: elasticity evidence alongside the trend sentence
+                try:
+                    from .param_sweep import (
+                        compute_sensitivity,
+                        format_sensitivity_sentence,
+                    )
+
+                    pts = sw.get("points") or sw["trend"].get("points") or []
+                    sens = compute_sensitivity(
+                        [p.get("x") for p in pts if isinstance(p, dict) and "y" in p],
+                        [p.get("y") for p in pts if isinstance(p, dict) and "y" in p],
+                    )
+                    if sens.get("elasticity") is not None:
+                        evidence.append(
+                            format_sensitivity_sentence(
+                                str(sw.get("axis_name") or "x"), sens
+                            )
+                        )
+                except Exception:
+                    pass
             gr = r.get("grid")
             if gr and gr.get("n", 0) >= 1:
                 evidence.append(
