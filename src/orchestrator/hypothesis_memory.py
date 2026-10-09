@@ -82,7 +82,7 @@ def extract_memorable(results: list[dict], question: str) -> list[dict]:
             score = max(float(score), MIN_SCORE_TO_REMEMBER)
         if float(score) < MIN_SCORE_TO_REMEMBER:
             continue
-        out.append({
+        entry = {
             "prediction": str(hyp.get("prediction", ""))[:160],
             "tools": tools,
             "params": [
@@ -92,7 +92,38 @@ def extract_memorable(results: list[dict], question: str) -> list[dict]:
             "score": float(score),
             "round": r.get("round") or "first",
             "ts": time.time(),
-        })
+        }
+        # L37: keep sweep spec (+ elasticity) so recall can re-run the scan
+        sweep_spec = hyp.get("sweep")
+        sw = r.get("sweep") or {}
+        if sweep_spec or sw.get("points"):
+            if sweep_spec:
+                entry["sweep"] = {
+                    "tool": sweep_spec.get("tool"),
+                    "params": sweep_spec.get("params") or {},
+                    "axis": sweep_spec.get("axis"),
+                    "extract": sweep_spec.get("extract"),
+                }
+            else:
+                entry["sweep"] = {
+                    "tool": tools[0] if tools else None,
+                    "params": {},
+                    "axis": {"name": sw.get("axis_name") or "x"},
+                    "extract": sw.get("extract"),
+                }
+            try:
+                from .param_sweep import compute_sensitivity
+
+                pts = sw.get("points") or []
+                sens = compute_sensitivity(
+                    [p.get("x") for p in pts if "y" in p],
+                    [p.get("y") for p in pts if "y" in p],
+                )
+                if sens.get("elasticity") is not None:
+                    entry["sensitivity"] = sens["elasticity"]
+            except Exception:
+                pass
+        out.append(entry)
     return out
 
 
@@ -128,13 +159,18 @@ def recall_hypotheses(question: str, path: str | None = None, limit: int = 3) ->
     scored.sort(key=lambda t: (-t[0], -t[1]))
     out = []
     for _, _, e in scored[:limit]:
-        out.append({
+        item = {
             "prediction": e.get("prediction"),
             "tools": e.get("tools"),
             "params": e.get("params"),
             "assumptions": ["memory-recall"],
             "memory_score": e.get("score"),
-        })
+        }
+        if e.get("sweep"):
+            item["sweep"] = e["sweep"]
+            if e.get("sensitivity") is not None:
+                item["memory_sensitivity"] = e["sensitivity"]
+        out.append(item)
     return out
 
 
@@ -147,6 +183,13 @@ def inject_memory_candidates(
     rec = recall_hypotheses(question, path=path, limit=limit)
     hyps = []
     for e in rec:
+        if e.get("sweep"):
+            hyps.append({
+                "prediction": e.get("prediction") or "memory sweep recall",
+                "sweep": e["sweep"],
+                "assumptions": ["memory-recall"],
+            })
+            continue
         tools = e.get("tools") or []
         params = e.get("params") or []
         steps = []

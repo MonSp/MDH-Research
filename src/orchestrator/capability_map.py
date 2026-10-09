@@ -276,6 +276,21 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L36", "Known-value epsilon gate",
         "ok" if has_eps else "missing",
         "hawking T∝1/M ε≈-1; check_chain sweep")
+    hm_src = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hypothesis_memory.py"),
+                  encoding="utf-8") as f:
+            hm_src = f.read()
+    except OSError:
+        pass
+    has_mem_sweep = (
+        'entry["sweep"]' in hm_src
+        and 'item["sweep"] = e["sweep"]' in hm_src
+        and '"sweep": e["sweep"]' in hm_src
+    )
+    row("L37", "Memory sweep recall",
+        "ok" if has_mem_sweep else "missing",
+        "remember sweep spec+ε; inject sweep hyp")
     return rows
 
 
