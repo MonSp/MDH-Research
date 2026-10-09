@@ -291,6 +291,21 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L37", "Memory sweep recall",
         "ok" if has_mem_sweep else "missing",
         "remember sweep spec+ε; inject sweep hyp")
+    camp_src2 = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "campaign.py"),
+                  encoding="utf-8") as f:
+            camp_src2 = f.read()
+    except OSError:
+        pass
+    has_camp_eps = (
+        "n_sweep_questions" in camp_src2
+        and "mean_elasticity" in camp_src2
+        and "compute_sensitivity" in camp_src2
+    )
+    row("L38", "Campaign sweep ε summary",
+        "ok" if has_camp_eps else "missing",
+        "sweep_rate + mean_elasticity; report line")
     return rows
 
 

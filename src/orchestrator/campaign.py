@@ -45,6 +45,28 @@ def summarize_campaign(question_results: list[dict]) -> dict[str, Any]:
         if f.get("n_steps"):
             pass
 
+    # L38: sweep coverage + mean elasticity across questions
+    n_sweep = 0
+    eps_list: list[float] = []
+    from .param_sweep import compute_sensitivity
+
+    for q in question_results:
+        found = False
+        for r in q.get("results") or []:
+            sw = r.get("sweep")
+            if not sw:
+                continue
+            found = True
+            pts = sw.get("points") or []
+            sens = compute_sensitivity(
+                [p.get("x") for p in pts if isinstance(p, dict) and "y" in p],
+                [p.get("y") for p in pts if isinstance(p, dict) and "y" in p],
+            )
+            if sens.get("elasticity") is not None:
+                eps_list.append(float(sens["elasticity"]))
+        if found:
+            n_sweep += 1
+
     return {
         "n_questions": n_q,
         "n_verified": n_ok,
@@ -56,6 +78,11 @@ def summarize_campaign(question_results: list[dict]) -> dict[str, Any]:
         "known_value_rate": (kv_pass / kv_total) if kv_total else None,
         "mean_best_score": (sum(scores) / len(scores)) if scores else None,
         "max_best_score": max(scores) if scores else None,
+        "n_sweep_questions": n_sweep,
+        "sweep_rate": (n_sweep / n_q) if n_q else 0.0,
+        "mean_elasticity": (
+            sum(eps_list) / len(eps_list) if eps_list else None
+        ),
     }
 
 

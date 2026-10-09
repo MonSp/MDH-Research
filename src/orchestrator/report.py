@@ -134,6 +134,15 @@ def render_campaign(campaign: dict) -> str:
         f"- store_growth: {summary.get('store_growth', 0)}  "
         f"store_distance: {_fmt_float(summary.get('store_distance'))}"
     )
+    if summary.get("n_sweep_questions") is not None:
+        mean_eps = summary.get("mean_elasticity")
+        eps_s = _fmt_float(mean_eps) if mean_eps is not None else "n/a"
+        lines.append(
+            f"- sweep: {summary.get('n_sweep_questions', 0)}/"
+            f"{summary.get('n_questions', 0)} "
+            f"(rate {_fmt_float(summary.get('sweep_rate'))})  "
+            f"mean ε={eps_s}"
+        )
     if summary.get("stopped_early"):
         lines.append("- stopped_early: true")
     js = campaign.get("journal_summary") or {}
