@@ -101,6 +101,7 @@ research/
 - **战役扫描结果（L33）**：`run_campaign` 在 question 上保留 slim `results`（仅 sweep/grid）；`render_campaign` 伪 run 可出可视化与 CSV
 - **战役 CSV 导出（L34）**：`cli campaign --csv PATH` 合并各题 results 后 `export_run_csv`；与 `run --csv` 对称
 - **检查点扫描结果（L35）**：`save_checkpoint` 存 slim sweep/grid；`checkpoint_to_run_result` 还原 `results` 供可视化/CSV
+- **已知量 ε 门禁（L36）**：`known_values.check_sweep_sensitivity`；hawking sweep 期望 ε≈-1（T∝1/M）；`check_chain` 扫 sweep 点
 - **失败重规划**：`replan.diagnose_failure` + `heuristic_repair`；缺 metric 前置 factory / 注入 diagonal；缺参填默认；同义词与坏 kwargs 修复；journal note 记 `REPLAN(...)`；不可修则保持失败
 - **智能体数学基础**：`agent_math.py` 研究轨迹 Shannon 熵 / decision pressure / MetricStore 状态 L2 距离 / sweep 信息量；`conclusion.foundations` 附带 run 级过程指标
 - **假设排序**：`score_hypothesis` / `rank_hypotheses`；`conclusion.hypothesis_ranking` + `best_hypothesis`；journal conclusion 带 foundations/ranking extra
@@ -134,6 +135,7 @@ research/
 - **战役扫描结果（L33）**：campaign 保留 sweep/grid 切片；`capmap` L33 行
 - **战役 CSV 导出（L34）**：`cli campaign --csv`；`capmap` L34 行
 - **检查点扫描结果（L35）**：checkpoint slim results；`capmap` L35 行
+- **已知量 ε 门禁（L36）**：sweep 弹性 vs 教科书幂律；`capmap` L36 行
 
 ## 与大荒界生态的关系
 

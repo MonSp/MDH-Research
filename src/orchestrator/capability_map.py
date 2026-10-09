@@ -262,6 +262,20 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L35", "Checkpoint sweep results",
         "ok" if has_ck_slim else "missing",
         "save/restore slim sweep/grid; viz+CSV")
+    kv_src = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "known_values.py"),
+                  encoding="utf-8") as f:
+            kv_src = f.read()
+    except OSError:
+        pass
+    has_eps = (
+        "def check_sweep_sensitivity" in kv_src
+        and "SWEEP_EPSILON_EXPECTED" in kv_src
+    )
+    row("L36", "Known-value epsilon gate",
+        "ok" if has_eps else "missing",
+        "hawking T∝1/M ε≈-1; check_chain sweep")
     return rows
 
 
