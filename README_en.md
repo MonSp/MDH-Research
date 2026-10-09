@@ -167,6 +167,7 @@ Grounded in code and evals, not vision slides:
 | **L37 Memory sweep recall** | Memory stores sweep spec + ε; recall/inject restores sweep hypotheses | ✅ |
 | **L38 Campaign ε summary** | Summary reports sweep rate + mean elasticity; campaign report line | ✅ |
 | **L39 Cross-campaign ε trend** | Trend reports sweep_rate/mean_elasticity first→last across campaigns | ✅ |
+| **L40 Analyze SENS evidence** | `_analyze` appends `SENS: ε=…` evidence for successful sweeps | ✅ |
 
 ### Compute / reason / verify
 
@@ -392,6 +393,7 @@ Apache 2.0
 | L37 | Memory sweep recall | ✅ |
 | L38 | Campaign sweep ε summary | ✅ |
 | L39 | Cross-campaign ε trend | ✅ |
+| L40 | Analyze SENS evidence | ✅ |
 
-_内省：**41/41** OK · `cli capmap`_
+_内省：**42/42** OK · `cli capmap`_
 <!-- capability-map:end -->

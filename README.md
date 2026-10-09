@@ -168,6 +168,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L37 记忆存扫描链** | 记忆存 sweep spec + ε；recall/inject 还原扫描假设 | ✅ |
 | **L38 战役 ε 汇总** | summary 报 sweep 覆盖率与 mean ε；战役报告附行 | ✅ |
 | **L39 战役级 ε 趋势** | trend 跨 campaign 报 sweep_rate/mean_elasticity 的 first→last | ✅ |
+| **L40 分析证据 SENS** | `_analyze` 成功 sweep 追加 `SENS: ε=…` 证据行 | ✅ |
 
 ### 计算 / 推理 / 验证
 
@@ -393,6 +394,7 @@ Apache 2.0
 | L37 | Memory sweep recall | ✅ |
 | L38 | Campaign sweep ε summary | ✅ |
 | L39 | Cross-campaign ε trend | ✅ |
+| L40 | Analyze SENS evidence | ✅ |
 
-_内省：**41/41** OK · `cli capmap`_
+_内省：**42/42** OK · `cli capmap`_
 <!-- capability-map:end -->
