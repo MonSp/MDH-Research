@@ -161,6 +161,7 @@ Grounded in code and evals, not vision slides:
 | **L31 Sweep export** | `cli run --csv` + API `POST /viz`; `export_run_csv` to disk/response | ✅ |
 | **L32 Sweep sensitivity** | Elasticity ε=d ln y/d ln x; grid dominant-axis rank; SENS in report | ✅ |
 | **L33 Campaign sweep results** | Campaign keeps slim sweep/grid slices; report viz + CSV export | ✅ |
+| **L34 Campaign CSV export** | `cli campaign --csv` merges multi-question sweep/grid to disk | ✅ |
 
 ### Compute / reason / verify
 
@@ -380,6 +381,7 @@ Apache 2.0
 | L31 | Sweep export (CLI/API) | ✅ |
 | L32 | Sweep sensitivity | ✅ |
 | L33 | Campaign sweep results | ✅ |
+| L34 | Campaign CSV export | ✅ |
 
-_内省：**35/35** OK · `cli capmap`_
+_内省：**36/36** OK · `cli capmap`_
 <!-- capability-map:end -->

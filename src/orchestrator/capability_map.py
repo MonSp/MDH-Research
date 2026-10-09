@@ -247,6 +247,10 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L33", "Campaign sweep results",
         "ok" if has_camp_results else "missing",
         "campaign keeps slim sweep/grid; report+CSV")
+    has_camp_csv = "--csv" in cli_src and "export_run_csv(merged" in cli_src
+    row("L34", "Campaign CSV export",
+        "ok" if (has_camp_csv and has_export) else "missing",
+        "cli campaign --csv merges question results")
     return rows
 
 
