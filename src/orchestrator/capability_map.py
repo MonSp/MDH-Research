@@ -251,6 +251,17 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L34", "Campaign CSV export",
         "ok" if (has_camp_csv and has_export) else "missing",
         "cli campaign --csv merges question results")
+    ck_src = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "checkpoint.py"),
+                  encoding="utf-8") as f:
+            ck_src = f.read()
+    except OSError:
+        pass
+    has_ck_slim = '"results": slim' in ck_src and 'ckpt.get("results")' in ck_src
+    row("L35", "Checkpoint sweep results",
+        "ok" if has_ck_slim else "missing",
+        "save/restore slim sweep/grid; viz+CSV")
     return rows
 
 

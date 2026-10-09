@@ -44,6 +44,16 @@ def save_checkpoint(
         }
     else:
         conclusion = result.get("conclusion") or {}
+        # slim sweep/grid slices only (L35) so viz/CSV survive the snapshot
+        slim = []
+        for r in result.get("results") or []:
+            piece = {}
+            if r.get("sweep"):
+                piece["sweep"] = _serialize(r["sweep"])
+            if r.get("grid"):
+                piece["grid"] = _serialize(r["grid"])
+            if piece:
+                slim.append(piece)
         checkpoint = {
             "kind": "run",
             "label": label or result.get("question", "")[:80],
@@ -53,6 +63,7 @@ def save_checkpoint(
             "verdict": conclusion.get("verdict"),
             "competed": conclusion.get("competed"),
             "iterate_rounds": conclusion.get("iterate_rounds"),
+            "results": slim,
         }
 
     if path is None:
@@ -109,6 +120,7 @@ def checkpoint_to_run_result(ckpt: dict) -> dict:
         return {"summary": ckpt.get("summary") or {}, "questions": []}
     return {
         "question": ckpt.get("question"),
+        "results": ckpt.get("results") or [],
         "conclusion": ckpt.get("conclusion") or {
             "verdict": ckpt.get("verdict"),
         },

@@ -163,6 +163,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L32 扫描灵敏度** | 弹性 ε=d ln y/d ln x；网格主轴排序；报告附 SENS | ✅ |
 | **L33 战役扫描结果** | campaign 保留 sweep/grid 切片；战役报告可视化 + 可导出 | ✅ |
 | **L34 战役 CSV 导出** | `cli campaign --csv` 合并多题 sweep/grid 落盘 | ✅ |
+| **L35 检查点扫描结果** | checkpoint 存/还原 slim sweep/grid；快照后可出报告与 CSV | ✅ |
 
 ### 计算 / 推理 / 验证
 
@@ -383,6 +384,7 @@ Apache 2.0
 | L32 | Sweep sensitivity | ✅ |
 | L33 | Campaign sweep results | ✅ |
 | L34 | Campaign CSV export | ✅ |
+| L35 | Checkpoint sweep results | ✅ |
 
-_内省：**36/36** OK · `cli capmap`_
+_内省：**37/37** OK · `cli capmap`_
 <!-- capability-map:end -->
