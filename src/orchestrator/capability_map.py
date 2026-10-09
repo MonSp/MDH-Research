@@ -306,6 +306,21 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L38", "Campaign sweep ε summary",
         "ok" if has_camp_eps else "missing",
         "sweep_rate + mean_elasticity; report line")
+    tr_src = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "trend.py"),
+                  encoding="utf-8") as f:
+            tr_src = f.read()
+    except OSError:
+        pass
+    has_tr_eps = (
+        "mean_elasticity" in tr_src
+        and "sweep_rate" in tr_src
+        and '"n_sweep_questions"' in tr_src
+    )
+    row("L39", "Cross-campaign ε trend",
+        "ok" if has_tr_eps else "missing",
+        "trend delta+series sweep_rate/mean_elasticity")
     return rows
 
 

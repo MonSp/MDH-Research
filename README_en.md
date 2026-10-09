@@ -166,6 +166,7 @@ Grounded in code and evals, not vision slides:
 | **L36 Known-value epsilon gate** | Hawking sweep checks ε≈-1 (T∝1/M); enters known_value_checks | ✅ |
 | **L37 Memory sweep recall** | Memory stores sweep spec + ε; recall/inject restores sweep hypotheses | ✅ |
 | **L38 Campaign ε summary** | Summary reports sweep rate + mean elasticity; campaign report line | ✅ |
+| **L39 Cross-campaign ε trend** | Trend reports sweep_rate/mean_elasticity first→last across campaigns | ✅ |
 
 ### Compute / reason / verify
 
@@ -390,6 +391,7 @@ Apache 2.0
 | L36 | Known-value epsilon gate | ✅ |
 | L37 | Memory sweep recall | ✅ |
 | L38 | Campaign sweep ε summary | ✅ |
+| L39 | Cross-campaign ε trend | ✅ |
 
-_内省：**40/40** OK · `cli capmap`_
+_内省：**41/41** OK · `cli capmap`_
 <!-- capability-map:end -->
