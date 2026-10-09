@@ -164,6 +164,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L33 战役扫描结果** | campaign 保留 sweep/grid 切片；战役报告可视化 + 可导出 | ✅ |
 | **L34 战役 CSV 导出** | `cli campaign --csv` 合并多题 sweep/grid 落盘 | ✅ |
 | **L35 检查点扫描结果** | checkpoint 存/还原 slim sweep/grid；快照后可出报告与 CSV | ✅ |
+| **L36 已知量 ε 门禁** | hawking sweep 校验 ε≈-1（T∝1/M）；进 known_value_checks | ✅ |
 
 ### 计算 / 推理 / 验证
 
@@ -385,6 +386,7 @@ Apache 2.0
 | L33 | Campaign sweep results | ✅ |
 | L34 | Campaign CSV export | ✅ |
 | L35 | Checkpoint sweep results | ✅ |
+| L36 | Known-value epsilon gate | ✅ |
 
-_内省：**37/37** OK · `cli capmap`_
+_内省：**38/38** OK · `cli capmap`_
 <!-- capability-map:end -->

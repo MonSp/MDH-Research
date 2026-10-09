@@ -163,6 +163,7 @@ Grounded in code and evals, not vision slides:
 | **L33 Campaign sweep results** | Campaign keeps slim sweep/grid slices; report viz + CSV export | ✅ |
 | **L34 Campaign CSV export** | `cli campaign --csv` merges multi-question sweep/grid to disk | ✅ |
 | **L35 Checkpoint sweep results** | Checkpoints store/restore slim sweep/grid; report + CSV after snapshot | ✅ |
+| **L36 Known-value epsilon gate** | Hawking sweep checks ε≈-1 (T∝1/M); enters known_value_checks | ✅ |
 
 ### Compute / reason / verify
 
@@ -384,6 +385,7 @@ Apache 2.0
 | L33 | Campaign sweep results | ✅ |
 | L34 | Campaign CSV export | ✅ |
 | L35 | Checkpoint sweep results | ✅ |
+| L36 | Known-value epsilon gate | ✅ |
 
-_内省：**37/37** OK · `cli capmap`_
+_内省：**38/38** OK · `cli capmap`_
 <!-- capability-map:end -->

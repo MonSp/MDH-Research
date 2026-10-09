@@ -135,6 +135,44 @@ def check_kretschmann_value(result: Any, params: dict | None = None,
     }
 
 
+# L36: expected power-law exponents for recognizable sweeps
+SWEEP_EPSILON_EXPECTED: dict[str, float] = {
+    "hawking_temperature": -1.0,  # T ∝ 1/M
+}
+SWEEP_EPSILON_TOL = 0.15
+
+
+def check_sweep_sensitivity(sweep: dict, tool: str) -> dict | None:
+    """Gate a 1D sweep's elasticity ε against textbook power laws."""
+    if tool not in SWEEP_EPSILON_EXPECTED:
+        return None
+    pts = (sweep or {}).get("points") or []
+    xs = [p.get("x") for p in pts if isinstance(p, dict) and "y" in p]
+    ys = [p.get("y") for p in pts if isinstance(p, dict) and "y" in p]
+    from .param_sweep import compute_sensitivity
+
+    sens = compute_sensitivity(
+        [x for x in xs if isinstance(x, (int, float))],
+        [y for y in ys if isinstance(y, (int, float))],
+    )
+    eps = sens.get("elasticity")
+    if eps is None or sens.get("n", 0) < 2:
+        return None
+    expected = SWEEP_EPSILON_EXPECTED[tool]
+    ok = abs(eps - expected) <= SWEEP_EPSILON_TOL
+    return {
+        "name": "hawking_sweep_epsilon" if tool == "hawking_temperature"
+                else f"{tool}_sweep_epsilon",
+        "passed": ok,
+        "expected": expected,
+        "observed": eps,
+        "detail": (
+            f"ε={eps:.4g} vs expected {expected} "
+            f"(n={sens['n']}, tol={SWEEP_EPSILON_TOL})"
+        ),
+    }
+
+
 def check_result(tool: str, result: Any, params: dict | None = None) -> list[dict]:
     """Run all applicable known-value checks for one tool result."""
     checks: list[dict] = []
@@ -306,7 +344,7 @@ def check_chain(
     catalog: list[dict] | None = None,
     catalog_path: str | None = None,
 ) -> list[dict]:
-    """Scan ResearchLoop results for known-value checks."""
+    """Scan ResearchLoop results for known-value checks (incl. sweeps)."""
     out: list[dict] = []
     for r in results or []:
         for s in r.get("steps") or []:
@@ -320,6 +358,17 @@ def check_chain(
                     catalog_path=catalog_path,
                 )
             )
+        sw = r.get("sweep")
+        if sw:
+            steps = r.get("steps") or []
+            tool = str(steps[0].get("tool") or "") if steps else ""
+            if not tool:
+                hyp = r.get("hypothesis") or {}
+                sweep_spec = hyp.get("sweep") or {}
+                tool = str(sweep_spec.get("tool") or "")
+            c = check_sweep_sensitivity(sw, tool)
+            if c:
+                out.append(c)
     return out
 
 
