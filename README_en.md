@@ -162,6 +162,7 @@ Grounded in code and evals, not vision slides:
 | **L32 Sweep sensitivity** | Elasticity ε=d ln y/d ln x; grid dominant-axis rank; SENS in report | ✅ |
 | **L33 Campaign sweep results** | Campaign keeps slim sweep/grid slices; report viz + CSV export | ✅ |
 | **L34 Campaign CSV export** | `cli campaign --csv` merges multi-question sweep/grid to disk | ✅ |
+| **L35 Checkpoint sweep results** | Checkpoints store/restore slim sweep/grid; report + CSV after snapshot | ✅ |
 
 ### Compute / reason / verify
 
@@ -382,6 +383,7 @@ Apache 2.0
 | L32 | Sweep sensitivity | ✅ |
 | L33 | Campaign sweep results | ✅ |
 | L34 | Campaign CSV export | ✅ |
+| L35 | Checkpoint sweep results | ✅ |
 
-_内省：**36/36** OK · `cli capmap`_
+_内省：**37/37** OK · `cli capmap`_
 <!-- capability-map:end -->
