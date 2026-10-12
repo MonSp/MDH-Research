@@ -353,6 +353,21 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L42", "Grid axis SENS evidence",
         "ok" if has_grid_sens else "missing",
         "_analyze GRID-SENS ε_x/ε_y/dominant")
+    ja_src = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "journal_analytics.py"),
+                  encoding="utf-8") as f:
+            ja_src = f.read()
+    except OSError:
+        pass
+    has_ja_sweep = (
+        "n_sweep_experiments" in ja_src
+        and "sweep_failure_rate" in ja_src
+        and "mean_sweep_duration_ms" in ja_src
+    )
+    row("L43", "Sweep process metrics",
+        "ok" if has_ja_sweep else "missing",
+        "journal analytics sweep count/fail/duration")
     return rows
 
 
