@@ -107,6 +107,7 @@ research/
 - **战役级 ε 趋势（L39）**：`trend.compute_trend` delta/series 带 `sweep_rate`/`mean_elasticity`；`render_trend` 表加 sweep/ε 列
 - **分析证据带 SENS（L40）**：`_analyze` 对成功 sweep 追加 `SENS: ε=…` 证据行（与 SWEEP/KNOWN-VALUE 并列）
 - **战役检查点扫描结果（L41）**：campaign `save_checkpoint` 存 questions 的 slim `results`；`checkpoint_to_run_result` 还原供报告/CSV
+- **网格轴 SENS 证据（L42）**：`_analyze` 对成功 grid 追加 `GRID-SENS: ε_x/ε_y/dominant=…`（与 L40 1D 对称）
 - **失败重规划**：`replan.diagnose_failure` + `heuristic_repair`；缺 metric 前置 factory / 注入 diagonal；缺参填默认；同义词与坏 kwargs 修复；journal note 记 `REPLAN(...)`；不可修则保持失败
 - **智能体数学基础**：`agent_math.py` 研究轨迹 Shannon 熵 / decision pressure / MetricStore 状态 L2 距离 / sweep 信息量；`conclusion.foundations` 附带 run 级过程指标
 - **假设排序**：`score_hypothesis` / `rank_hypotheses`；`conclusion.hypothesis_ranking` + `best_hypothesis`；journal conclusion 带 foundations/ranking extra
@@ -146,6 +147,7 @@ research/
 - **战役级 ε 趋势（L39）**：跨 campaign ε first→last；`capmap` L39 行
 - **分析证据带 SENS（L40）**：conclusion.evidence 含 ε；`capmap` L40 行
 - **战役检查点扫描结果（L41）**：campaign ckpt slim questions；`capmap` L41 行
+- **网格轴 SENS 证据（L42）**：GRID-SENS 进 evidence；`capmap` L42 行
 
 ## 与大荒界生态的关系
 

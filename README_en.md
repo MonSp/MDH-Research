@@ -169,6 +169,7 @@ Grounded in code and evals, not vision slides:
 | **L39 Cross-campaign ε trend** | Trend reports sweep_rate/mean_elasticity first→last across campaigns | ✅ |
 | **L40 Analyze SENS evidence** | `_analyze` appends `SENS: ε=…` evidence for successful sweeps | ✅ |
 | **L41 Campaign checkpoint sweep results** | Campaign checkpoints store/restore slim question results | ✅ |
+| **L42 Grid axis SENS evidence** | `_analyze` appends `GRID-SENS: ε_x/ε_y/dominant` for successful grids | ✅ |
 
 ### Compute / reason / verify
 
@@ -396,6 +397,7 @@ Apache 2.0
 | L39 | Cross-campaign ε trend | ✅ |
 | L40 | Analyze SENS evidence | ✅ |
 | L41 | Campaign checkpoint sweep | ✅ |
+| L42 | Grid axis SENS evidence | ✅ |
 
-_内省：**43/43** OK · `cli capmap`_
+_内省：**44/44** OK · `cli capmap`_
 <!-- capability-map:end -->

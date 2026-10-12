@@ -1323,6 +1323,22 @@ Example multi-step chain:
                     or f"GRID: n={gr.get('n')} z={gr.get('z_min')}…{gr.get('z_max')}"
                 )
                 any_confirmed = True
+                # L42: axis sensitivity evidence (symmetric with L40 1D SENS)
+                try:
+                    from .param_sweep import summarize_grid_sensitivity
+
+                    gs = summarize_grid_sensitivity(gr)
+                    if gs.get("n"):
+                        ex = gs.get("elasticity_x")
+                        ey = gs.get("elasticity_y")
+                        dom = gs.get("dominant_axis")
+                        ex_s = f"{ex:.3g}" if ex is not None else "n/a"
+                        ey_s = f"{ey:.3g}" if ey is not None else "n/a"
+                        evidence.append(
+                            f"GRID-SENS: ε_x={ex_s} ε_y={ey_s} dominant={dom}"
+                        )
+                except Exception:
+                    pass
 
             extra_params: dict[str, float] = {}
             if metric_name:

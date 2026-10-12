@@ -349,6 +349,10 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L41", "Campaign checkpoint sweep",
         "ok" if has_camp_ck else "missing",
         "campaign ckpt slim questions; report+CSV")
+    has_grid_sens = "GRID-SENS" in rl_src and "summarize_grid_sensitivity" in rl_src
+    row("L42", "Grid axis SENS evidence",
+        "ok" if has_grid_sens else "missing",
+        "_analyze GRID-SENS ε_x/ε_y/dominant")
     return rows
 
 
