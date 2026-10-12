@@ -87,6 +87,35 @@ def session_metrics(events: list[dict], session_id: str | None = None) -> dict[s
         elif isinstance(ranking, list) and ranking and ranking[0].get("score") is not None:
             best_scores.append(float(ranking[0]["score"]))
 
+    # L43: sweep/grid process metrics (tool labeled sweep:/grid:)
+    sweep_ids: set[str] = set()
+    for e in events:
+        if e.get("type") == "experiment":
+            tool = str(_payload(e).get("tool") or "")
+            if tool.startswith("sweep:") or tool.startswith("grid:"):
+                if e.get("id"):
+                    sweep_ids.add(str(e["id"]))
+    n_sweep = len(sweep_ids)
+    n_sweep_ok = n_sweep_fail = 0
+    sweep_durations: list[float] = []
+    for e in events:
+        if e.get("type") != "observation":
+            continue
+        if str(e.get("parent_id") or "") not in sweep_ids:
+            continue
+        pload = _payload(e)
+        if pload.get("success"):
+            n_sweep_ok += 1
+        else:
+            n_sweep_fail += 1
+        dur = pload.get("duration_ms")
+        if dur is not None:
+            try:
+                sweep_durations.append(float(dur))
+            except (TypeError, ValueError):
+                pass
+    n_sweep_obs = n_sweep_ok + n_sweep_fail
+
     return {
         "session_id": session_id,
         "n_events": len(events),
@@ -102,6 +131,12 @@ def session_metrics(events: list[dict], session_id: str | None = None) -> dict[s
         "top_tools": tools.most_common(8),
         "mean_best_score": (sum(best_scores) / len(best_scores)) if best_scores else None,
         "n_scores": len(best_scores),
+        "n_sweep_experiments": n_sweep,
+        "n_sweep_failures": n_sweep_fail,
+        "sweep_failure_rate": (n_sweep_fail / n_sweep_obs) if n_sweep_obs else None,
+        "mean_sweep_duration_ms": (
+            sum(sweep_durations) / len(sweep_durations) if sweep_durations else None
+        ),
     }
 
 
@@ -114,6 +149,8 @@ def compare_sessions(sessions: dict[str, list[dict]]) -> dict[str, Any]:
     n_comp = n_iter = n_replan = 0
     n_obs = n_obs_ok = 0
     n_conc = 0
+    n_sweep = n_sweep_fail = 0
+    sweep_durs: list[float] = []
 
     for sid, events in sessions.items():
         m = session_metrics(events, session_id=sid)
@@ -127,11 +164,29 @@ def compare_sessions(sessions: dict[str, list[dict]]) -> dict[str, Any]:
             # reconstruct ok count
             n_obs_ok += int(round(m["observation_success_rate"] * m["n_observation"]))
         n_conc += m["n_conclusion"]
+        n_sweep += m.get("n_sweep_experiments") or 0
+        n_sweep_fail += m.get("n_sweep_failures") or 0
+        mdur = m.get("mean_sweep_duration_ms")
+        if mdur is not None:
+            # weight by session count of sweep obs approximated by equal share
+            sweep_durs.append(float(mdur))
         for t, c in m["top_tools"]:
             if not str(t).startswith("call:"):
                 tool_all[t] += c
         if m["mean_best_score"] is not None and m["n_scores"]:
             scores.extend([m["mean_best_score"]] * m["n_scores"])
+
+    # reconstruct sweep obs count from sessions for failure rate
+    n_sweep_obs = 0
+    for m in rows:
+        rate = m.get("sweep_failure_rate")
+        nf = m.get("n_sweep_failures") or 0
+        if rate and rate > 0:
+            n_sweep_obs += int(round(nf / rate))
+        elif rate == 0:
+            n_sweep_obs += m.get("n_sweep_experiments") or 0
+        else:
+            n_sweep_obs += m.get("n_sweep_experiments") or 0
 
     return {
         "n_sessions": len(sessions),
@@ -143,6 +198,12 @@ def compare_sessions(sessions: dict[str, list[dict]]) -> dict[str, Any]:
         "n_replan": n_replan,
         "top_tools": tool_all.most_common(10),
         "mean_best_score": (sum(scores) / len(scores)) if scores else None,
+        "n_sweep_experiments": n_sweep,
+        "n_sweep_failures": n_sweep_fail,
+        "sweep_failure_rate": (n_sweep_fail / n_sweep_obs) if n_sweep_obs else None,
+        "mean_sweep_duration_ms": (
+            sum(sweep_durs) / len(sweep_durs) if sweep_durs else None
+        ),
         "sessions": rows,
     }
 
@@ -166,6 +227,15 @@ def render_analytics(summary: dict[str, Any]) -> str:
     )
     if summary.get("mean_best_score") is not None:
         lines.append(f"- mean best score: {summary['mean_best_score']:.3f}")
+    if summary.get("n_sweep_experiments") is not None:
+        sfr = summary.get("sweep_failure_rate")
+        msd = summary.get("mean_sweep_duration_ms")
+        lines.append(
+            f"- sweep experiments: {summary.get('n_sweep_experiments', 0)}  "
+            f"failure rate: {'—' if sfr is None else f'{sfr:.2%}'}  "
+            f"mean duration: "
+            f"{'—' if msd is None else f'{msd:.1f} ms'}"
+        )
 
     top = summary.get("top_tools") or []
     if top:

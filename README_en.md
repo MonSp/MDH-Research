@@ -170,6 +170,7 @@ Grounded in code and evals, not vision slides:
 | **L40 Analyze SENS evidence** | `_analyze` appends `SENS: ε=…` evidence for successful sweeps | ✅ |
 | **L41 Campaign checkpoint sweep results** | Campaign checkpoints store/restore slim question results | ✅ |
 | **L42 Grid axis SENS evidence** | `_analyze` appends `GRID-SENS: ε_x/ε_y/dominant` for successful grids | ✅ |
+| **L43 Sweep process metrics** | Analytics reports sweep/grid experiment count, failure rate, mean duration | ✅ |
 
 ### Compute / reason / verify
 
@@ -398,6 +399,7 @@ Apache 2.0
 | L40 | Analyze SENS evidence | ✅ |
 | L41 | Campaign checkpoint sweep | ✅ |
 | L42 | Grid axis SENS evidence | ✅ |
+| L43 | Sweep process metrics | ✅ |
 
-_内省：**44/44** OK · `cli capmap`_
+_内省：**45/45** OK · `cli capmap`_
 <!-- capability-map:end -->
