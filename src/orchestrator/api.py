@@ -158,9 +158,36 @@ def create_app() -> Any:
                 os.unlink(tmp_path)
             except OSError:
                 pass
+        # L44: structured sensitivity from first finite sweep points
+        sensitivity: dict = {}
+        try:
+            from .param_sweep import compute_sensitivity
+
+            for r in result.get("results") or []:
+                sw = r.get("sweep") or {}
+                pts = sw.get("points") or []
+                if not pts:
+                    continue
+                xs = [p.get("x") for p in pts if isinstance(p, dict) and "y" in p]
+                ys = [p.get("y") for p in pts if isinstance(p, dict) and "y" in p]
+                sens = compute_sensitivity(
+                    [x for x in xs if isinstance(x, (int, float))],
+                    [y for y in ys if isinstance(y, (int, float))],
+                )
+                if sens.get("elasticity") is not None:
+                    sensitivity = {
+                        "axis": str(sw.get("axis_name") or "x"),
+                        "elasticity": sens["elasticity"],
+                        "n": sens.get("n"),
+                        "median_abs_local": sens.get("median_abs_local"),
+                    }
+                    break
+        except Exception:
+            sensitivity = {}
         return {
             "markdown": markdown,
             "csv": csv_text,
+            "sensitivity": sensitivity,
             "verdict": (result.get("conclusion") or {}).get("verdict"),
         }
 

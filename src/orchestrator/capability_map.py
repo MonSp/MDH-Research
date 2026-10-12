@@ -368,6 +368,17 @@ def detect_capabilities() -> list[dict[str, Any]]:
     row("L43", "Sweep process metrics",
         "ok" if has_ja_sweep else "missing",
         "journal analytics sweep count/fail/duration")
+    api_src = ""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "api.py"),
+                  encoding="utf-8") as f:
+            api_src = f.read()
+    except OSError:
+        pass
+    has_viz_eps = '"sensitivity": sensitivity' in api_src
+    row("L44", "API viz sensitivity",
+        "ok" if has_viz_eps else "missing",
+        "POST /viz returns sensitivity{elasticity}")
     return rows
 
 
