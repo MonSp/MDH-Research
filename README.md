@@ -170,6 +170,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L39 战役级 ε 趋势** | trend 跨 campaign 报 sweep_rate/mean_elasticity 的 first→last | ✅ |
 | **L40 分析证据 SENS** | `_analyze` 成功 sweep 追加 `SENS: ε=…` 证据行 | ✅ |
 | **L41 战役检查点扫描结果** | campaign checkpoint 存/还原 questions slim results | ✅ |
+| **L42 网格轴 SENS 证据** | `_analyze` 成功 grid 追加 `GRID-SENS: ε_x/ε_y/dominant` | ✅ |
 
 ### 计算 / 推理 / 验证
 
@@ -397,6 +398,7 @@ Apache 2.0
 | L39 | Cross-campaign ε trend | ✅ |
 | L40 | Analyze SENS evidence | ✅ |
 | L41 | Campaign checkpoint sweep | ✅ |
+| L42 | Grid axis SENS evidence | ✅ |
 
-_内省：**43/43** OK · `cli capmap`_
+_内省：**44/44** OK · `cli capmap`_
 <!-- capability-map:end -->
