@@ -172,6 +172,7 @@ print(execute_tool("age_of_universe", {})["age_gyr"])  # ~13.8
 | **L41 战役检查点扫描结果** | campaign checkpoint 存/还原 questions slim results | ✅ |
 | **L42 网格轴 SENS 证据** | `_analyze` 成功 grid 追加 `GRID-SENS: ε_x/ε_y/dominant` | ✅ |
 | **L43 扫描过程指标** | analytics 报 sweep/grid 实验数、失败率、平均耗时 | ✅ |
+| **L44 API viz 带 ε** | `POST /viz` 响应含 `sensitivity`（elasticity 等） | ✅ |
 
 ### 计算 / 推理 / 验证
 
@@ -401,6 +402,7 @@ Apache 2.0
 | L41 | Campaign checkpoint sweep | ✅ |
 | L42 | Grid axis SENS evidence | ✅ |
 | L43 | Sweep process metrics | ✅ |
+| L44 | API viz sensitivity | ✅ |
 
-_内省：**45/45** OK · `cli capmap`_
+_内省：**46/46** OK · `cli capmap`_
 <!-- capability-map:end -->
